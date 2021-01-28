@@ -1,0 +1,11 @@
+defmodule <%= @module_name %> do
+	@moduedoc """
+	This module contains functions for calling DB's stored procedures.
+
+	Functions inside this module require as a first argument a pid. It is the pid of Postgrex driver process.
+	"""
+
+	<%= for routine_assigns <- @routines do %>
+	<%= routine_eex(routine_assigns)	%>
+	<% end %>
+end

@@ -1,0 +1,13 @@
+defmodule <%= @module_name %> do
+	@fields [
+		<% for {param, index} <- @routine_result_fields |> Enum.with_index() do %>
+		:<%= param %><%= if index != 0 do %>,<% end %>
+		<% end %>
+	]
+
+	@enforce_keys @fields
+
+	defstruct @fields
+
+	@type t() :: %<%= @module_name %>{}
+end
