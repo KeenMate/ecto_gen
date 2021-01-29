@@ -1,12 +1,14 @@
 defmodule EctoGen.Database.Helpers do
   alias EctoGen.Database
 
-  @spec get_routines_with_params_to_create(Keyword.t()) :: [{Database.DbRoutine.t(), [Database.DbRoutineParameter.t()]}]
+  @spec get_routines_with_params_to_create(Keyword.t()) :: [
+          {Database.DbRoutine.t(), [Database.DbRoutineParameter.t()]}
+        ]
   def get_routines_with_params_to_create(db_project) do
     db_project
     |> get_routines_to_create()
-    |> IO.inspect(label: "Routines to create")
     |> Enum.map(&get_routine_params/1)
+    # todo: do something with routine params calls that did not succeed
     |> Enum.filter(&(elem(&1, 0) == :ok))
     |> Enum.map(&elem(&1, 1))
   end
@@ -21,9 +23,15 @@ defmodule EctoGen.Database.Helpers do
   end
 
   def get_routine_params(%Database.DbRoutine{data_type: "USER-DEFINED"} = routine) do
-    case Database.get_routine_params(routine.schema, routine.specific_name, routine.type_schema, routine.type_name) do
+    case Database.get_routine_params(
+           routine.schema,
+           routine.specific_name,
+           routine.type_schema,
+           routine.type_name
+         ) do
       {:ok, routine_params} ->
         {:ok, {routine, routine_params}}
+
       {:error, _reason} = err ->
         err
     end
@@ -33,12 +41,15 @@ defmodule EctoGen.Database.Helpers do
     case Database.get_routine_params(routine.schema, routine.specific_name) do
       {:ok, routine_params} ->
         {:ok, {routine, routine_params}}
+
       {:error, _reason} = err ->
         err
     end
   end
 
-  @spec filter_routine_params([Database.DbRoutineParameter.t()], :input | :output) :: [Database.DbRoutineParameter.t()]
+  @spec filter_routine_params([Database.DbRoutineParameter.t()], :input | :output) :: [
+          Database.DbRoutineParameter.t()
+        ]
   def filter_routine_params(routine_params, :input) do
     routine_params
     |> filter_routine_params_by_mode("IN")
@@ -65,8 +76,9 @@ defmodule EctoGen.Database.Helpers do
     ignored_funcs = Keyword.get(schema_config, :ignored_funcs)
 
     case {funcs, ignored_funcs} do
-      {f, ignored} when (f in ["*", nil]) and is_list(ignored) ->
+      {f, ignored} when f in ["*", nil] and is_list(ignored) ->
         filter_ignored_routines(routines, ignored)
+
       {f, ignored} when is_list(f) and (is_list(ignored) or ignored == nil) ->
         filter_included_routines(routines, f, ignored)
     end
@@ -83,9 +95,6 @@ defmodule EctoGen.Database.Helpers do
   defp filter_ignored_routines(routines, nil), do: routines
 
   defp filter_ignored_routines(routines, ignored_funcs) do
-    IO.inspect(ignored_funcs, label: "Ignored funcs")
-    IO.inspect(routines, label: "routines")
-
     routines
     |> Enum.filter(fn routine ->
       not Enum.any?(ignored_funcs, &(routine.name == &1))

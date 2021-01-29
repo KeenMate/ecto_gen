@@ -12,7 +12,7 @@ defmodule EctoGen.EEx.Helpers do
     routine_params
     |> sort_function_params_by_postion()
     |> Enum.reduce(
-      (if is_function_header, do: ["pid"], else: []),
+      if(is_function_header, do: ["pid"], else: []),
       fn %{name: param_name, parameter_default: default_value}, acc ->
         [
           if acc == [] do
@@ -21,10 +21,7 @@ defmodule EctoGen.EEx.Helpers do
             [acc, ", "]
           end,
           param_name,
-          if is_function_header and default_value  do
-            # todo: Think of a better way
-            # note: This does remove possibility for user to specify nil intentionally
-            # in case it will be removed from sql query during actual function call
+          if is_function_header and default_value do
             " \\\\ nil"
           else
             []
@@ -41,7 +38,7 @@ defmodule EctoGen.EEx.Helpers do
     |> Enum.reduce(
       [],
       &[
-        if (&2 == []) do
+        if &2 == [] do
           []
         else
           [&2, ", "]
@@ -94,7 +91,16 @@ defmodule EctoGen.EEx.Helpers do
 
   @spec get_routine_parse_function_name(binary() | iodata()) :: iodata()
   def get_routine_parse_function_name(function_name, per_row \\ false) do
-    ["parse_", function_name, "_result", if per_row do "_row" else [] end]
+    [
+      "parse_",
+      function_name,
+      "_result",
+      if per_row do
+        "_row"
+      else
+        []
+      end
+    ]
   end
 
   @doc """
@@ -102,7 +108,7 @@ defmodule EctoGen.EEx.Helpers do
   """
   def trim_routine_params_names(routine_params) do
     routine_params
-    |> Enum.map(&(%DbRoutineParameter{&1 | name: &1.name |> String.trim("_")}))
+    |> Enum.map(&%DbRoutineParameter{&1 | name: &1.name |> String.trim("_")})
   end
 
   def simple_return_type_param_name(), do: "value"

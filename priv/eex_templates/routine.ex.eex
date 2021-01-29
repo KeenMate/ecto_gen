@@ -43,7 +43,7 @@
 			<%= if @routine_has_complex_data do %>
 			%<%= @routine_result_item_module_name %>{
 				<%= for {%{name: param}, index} <- @output_routine_params |> Enum.with_index() do %>
-				<%= if index != 0 do %>, <% end %><%= param %>: <%= param %>
+				<%= param %>: <%= param %><%= if index != Enum.count(@output_routine_params) do %>, <% end %>
 				<% end %>
 			}
 			<% else %>

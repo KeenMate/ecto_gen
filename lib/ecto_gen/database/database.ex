@@ -85,7 +85,6 @@ defmodule EctoGen.Database do
         [schema]
       )
       |> process_get_routines_result(schema)
-      |> IO.inspect(label: "Result for fetching all routines for schema: #{schema}")
 
     {:reply, result, state}
   end
@@ -152,7 +151,6 @@ defmodule EctoGen.Database do
        ) do
     result =
       rows
-      |> IO.inspect(label: "Routine param rows returned from db")
       |> Enum.map(&DbRoutineParameter.parse_from_db_row/1)
 
     successful_results =
@@ -178,7 +176,6 @@ defmodule EctoGen.Database do
        ) do
     result =
       rows
-      |> IO.inspect(label: "Routine rows returned from db")
       |> Enum.map(&DbRoutine.parse_from_db_row/1)
 
     successful_results =

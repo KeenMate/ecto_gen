@@ -32,29 +32,48 @@ defmodule EctoGen.EEx.EExGenerator do
   @spec generate_context_module([routine_with_params()], keyword()) ::
           iodata()
   def generate_context_module(routines_with_params, opts \\ []) do
-    routines_with_params
-    |> prepare_context_module_assigns(opts)
-    |> db_context_module_eex()
+    result =
+      routines_with_params
+      |> prepare_context_module_assigns(opts)
+      |> db_context_module_eex()
+
+    IO.puts("Current dir: #{File.cwd!()}")
+    File.write("temp.ex", result)
+
+    result
     |> Code.format_string!()
   end
 
   @spec generate_routines_results_modules(
           [routine_with_params()],
           binary() | iodata()
-        ) :: [iodata()]
+        ) :: [{Database.DbRoutine.t(), iodata()}]
   def generate_routines_results_modules(routines_with_params, module_name) do
     routines_with_params
-    |> Enum.filter(&(&1.data_type in ["USER-DEFINED", "record"]))
+    |> Enum.filter(&(elem(&1, 0).data_type in ["USER-DEFINED", "record"]))
     |> Enum.map(fn {routine, routine_params} ->
-      [
-        module_name: Database.DbRoutine.get_routine_result_item_module_name(routine, module_name),
-        routine_result_fields:
-          routine_params
-          |> Enum.map(& &1.name)
-      ]
+      {
+        routine,
+        [
+          module_name:
+            Database.DbRoutine.get_routine_result_item_module_name(routine, module_name),
+          routine_result_fields:
+            routine_params
+            |> Enum.map(& &1.name)
+        ]
+      }
     end)
-    |> Enum.map(&routine_result_item_eex/1)
-    |> Enum.map(&Code.format_string!/1)
+    |> Enum.map(fn {routine, assigns} ->
+      result =
+        assigns
+        |> routine_result_item_eex()
+
+      {
+        routine,
+        result
+        |> Code.format_string!()
+      }
+    end)
   end
 
   @spec prepare_context_module_assigns([routine_with_params()], keyword()) :: keyword()

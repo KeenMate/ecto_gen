@@ -1,7 +1,7 @@
 defmodule <%= @module_name %> do
 	@fields [
 		<% for {param, index} <- @routine_result_fields |> Enum.with_index() do %>
-		:<%= param %><%= if index != 0 do %>,<% end %>
+		:<%= param %><%= if index != Enum.count(@routine_result_fields) do %>,<% end %>
 		<% end %>
 	]
 

@@ -10,7 +10,10 @@ defmodule EctoGen.Database.DbRoutineParameter do
 
   @valid_udt_names [
     "text",
+    "varchar",
+    "uuid",
     "int",
+    "int2",
     "int4",
     "int8",
     "int16",
@@ -63,15 +66,14 @@ defmodule EctoGen.Database.DbRoutineParameter do
       iex> udt_name_to_elixir_term("timestamptz")
       "DateTime.t()"
   """
-  def udt_name_to_elixir_term("text"), do: "binary()"
-  def udt_name_to_elixir_term("int"), do: "integer()"
-  def udt_name_to_elixir_term("int4"), do: "integer()"
-  def udt_name_to_elixir_term("int8"), do: "integer()"
-  def udt_name_to_elixir_term("int16"), do: "integer()"
+  def udt_name_to_elixir_term(text) when text in ["text", "varchar", "uuid"], do: "binary()"
+  def udt_name_to_elixir_term("int" <> _), do: "integer()"
   def udt_name_to_elixir_term("bool"), do: "boolean()"
   def udt_name_to_elixir_term("date"), do: "Date.t()"
   def udt_name_to_elixir_term("timestamp"), do: "DateTime.t()"
   def udt_name_to_elixir_term("timestamptz"), do: "DateTime.t()"
+
+  defp check_udt_name(x), do: {:ok, x}
 
   defp check_udt_name(udt_name) when not is_binary(udt_name) do
     {:error, :einv_type}

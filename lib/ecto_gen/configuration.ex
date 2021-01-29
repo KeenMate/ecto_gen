@@ -10,7 +10,9 @@ defmodule EctoGen.Configuration do
     # included_schemas: get_included_schemas_config()
     %{
       database: Application.get_env(db_otp_app, db_config_key),
-      db_project: get_db_project()
+      db_project: get_db_project(),
+      output_location: Application.get_env(:ecto_gen, :output_location),
+      output_module: Application.get_env(:ecto_gen, :output_module)
     }
   end
 
@@ -30,6 +32,8 @@ defmodule EctoGen.Configuration do
     |> Enum.map(fn
       {key, value} when is_atom(key) ->
         {Atom.to_string(key), value}
+
+
       {key, _value} = kv when is_binary(key) ->
         kv
     end)

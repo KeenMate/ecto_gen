@@ -33,7 +33,10 @@ defmodule EctoGen.Database.DbRoutine do
   end
 
   def parse_from_db_row(value) do
-    Logger.error("Received invalid amount of columns when attempted to parse routine info row", value: inspect(value))
+    Logger.error("Received invalid amount of columns when attempted to parse routine info row",
+      value: inspect(value)
+    )
+
     {:error, :einvcolumncount}
   end
 
@@ -41,13 +44,27 @@ defmodule EctoGen.Database.DbRoutine do
   Returns fully-qualified module name where function's return struct should be.
   """
   @spec get_routine_result_item_module_name(t(), binary() | iodata()) :: iodata()
-  def get_routine_result_item_module_name(%DbRoutine{name: routine_name, schema: routine_schema}, module_name) do
-    result_item_name =
-      [routine_schema, "_", routine_name, "ResultItem"]
-      |> IO.iodata_to_binary()
-      |> Macro.camelize()
+  def get_routine_result_item_module_name(
+        %DbRoutine{name: routine_name, schema: routine_schema} = routine,
+        module_name
+      ) do
+    case has_complex_return_type?(routine) do
+      true ->
+        result_item_name =
+          get_routine_result_item_struct_name(routine_schema, routine_name)
+          |> IO.iodata_to_binary()
+          |> Macro.camelize()
 
-    [module_name, ".Modules.", result_item_name]
+        [module_name, ".Models.", result_item_name]
+
+      false ->
+        nil
+    end
+  end
+
+  @spec get_routine_result_item_struct_name(binary(), binary()) :: iodata()
+  def get_routine_result_item_struct_name(routine_schema, routine_name) do
+    [routine_schema, "_", routine_name, "ResultItem"]
   end
 
   def has_complex_return_type?(%DbRoutine{data_type: data_type}) do
