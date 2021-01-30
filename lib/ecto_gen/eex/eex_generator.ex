@@ -24,6 +24,15 @@ defmodule EctoGen.EEx.EExGenerator do
 
   EEx.function_from_file(
     :defp,
+    :routine_parser_eex,
+    Path.join(@eex_templates_path, "routine_parser.ex.eex"),
+    [
+      :assigns
+    ]
+  )
+
+  EEx.function_from_file(
+    :defp,
     :db_context_module_eex,
     Path.join(@eex_templates_path, "db_module.ex.eex"),
     [:assigns]
@@ -59,6 +68,8 @@ defmodule EctoGen.EEx.EExGenerator do
             Database.DbRoutine.get_routine_result_item_module_name(routine, module_name),
           routine_result_fields:
             routine_params
+            |> Enum.filter(&(&1.mode == "OUT"))
+            |> trim_routine_params_names()
             |> Enum.map(& &1.name)
         ]
       }
@@ -76,9 +87,33 @@ defmodule EctoGen.EEx.EExGenerator do
     end)
   end
 
+  @spec generate_routines_parser_modules([routine_with_params()], binary() | iodata()) :: [
+          {Database.DbRoutine.t(), iodata()}
+        ]
+  def generate_routines_parser_modules(routines_with_params, module_name) do
+    routines_with_params
+    |> Enum.map(fn {routine, routine_params} ->
+      {
+        routine,
+        prepare_routine_parser_assings(routine, routine_params, module_name)
+      }
+    end)
+    |> Enum.map(fn {routine, assigns} ->
+      result =
+        assigns
+        |> routine_parser_eex()
+
+      {
+        routine,
+        result
+        |> Code.format_string!()
+      }
+    end)
+  end
+
   @spec prepare_context_module_assigns([routine_with_params()], keyword()) :: keyword()
   def prepare_context_module_assigns(routines_with_params, opts) do
-    Logger.debug("Preparing schema assigns")
+    Logger.debug("Preparing db context module assigns")
 
     module_name = opts |> Keyword.get(:module_name)
 
@@ -94,18 +129,19 @@ defmodule EctoGen.EEx.EExGenerator do
     ]
   end
 
+  @spec prepare_routine_assigns(
+          Database.DbRoutine.t(),
+          [Database.DbRoutineParameter.t()],
+          binary()
+        ) :: keyword()
   def prepare_routine_assigns(routine, routine_params, module_name) do
+    Logger.debug("Preparing routine assigns", routine: routine.name)
+
     input_routine_params =
       DbHelpers.filter_routine_params(routine_params, :input)
       |> trim_routine_params_names()
 
-    output_routine_params =
-      DbHelpers.filter_routine_params(routine_params, :output)
-      |> trim_routine_params_names()
-
     function_name = get_routine_function_name(routine)
-
-    routine_has_complex_data = Database.DbRoutine.has_complex_return_type?(routine)
 
     [
       routine: routine,
@@ -114,16 +150,36 @@ defmodule EctoGen.EEx.EExGenerator do
       sql_params: generate_sql_params(input_routine_params),
       input_params: generate_function_params(input_routine_params),
       input_params_with_default: generate_function_params(input_routine_params, true),
+      parse_function_name: [
+        get_routine_parser_module_name(module_name, function_name),
+        ".",
+        get_routine_parse_function_name(function_name)
+      ]
+    ]
+  end
+
+  def prepare_routine_parser_assings(routine, routine_params, module_name) do
+    output_routine_params =
+      DbHelpers.filter_routine_params(routine_params, :output)
+      |> trim_routine_params_names()
+
+    routine_has_complex_data = Database.DbRoutine.has_complex_return_type?(routine)
+
+    function_name = get_routine_function_name(routine)
+
+    [
+      module_name: get_routine_parser_module_name(module_name, function_name),
+      function_name: function_name,
+      parse_function_name_result_row: get_routine_parse_function_name(function_name, true),
+      routine_has_complex_data: routine_has_complex_data,
+      output_routine_params: output_routine_params,
+      parse_function_name: get_routine_parse_function_name(function_name),
       output_params:
         if routine_has_complex_data do
           generate_function_params(output_routine_params)
         else
           simple_return_type_param_name()
         end,
-      output_routine_params: output_routine_params,
-      routine_has_complex_data: routine_has_complex_data,
-      parse_function_name: get_routine_parse_function_name(function_name),
-      parse_function_name_result_row: get_routine_parse_function_name(function_name, true),
       routine_result_item_module_name:
         Database.DbRoutine.get_routine_result_item_module_name(routine, module_name)
     ]

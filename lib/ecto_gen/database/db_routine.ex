@@ -62,9 +62,20 @@ defmodule EctoGen.Database.DbRoutine do
     end
   end
 
-  @spec get_routine_result_item_struct_name(binary(), binary()) :: iodata()
+  @spec get_routine_result_item_struct_name(binary() | iodata(), binary() | iodata()) :: iodata()
+  def get_routine_result_item_struct_name("public", routine_name) do
+    [routine_name, "Item"]
+  end
+
   def get_routine_result_item_struct_name(routine_schema, routine_name) do
-    [routine_schema, "_", routine_name, "ResultItem"]
+    [routine_schema, "_", routine_name, "Item"]
+  end
+
+  @spec get_routine_parser_name(binary() | iodata(), binary() | iodata()) :: iodata()
+  def get_routine_parser_name("public", routine_name), do: [routine_name, "Parser"]
+
+  def get_routine_parser_name(routine_schema, routine_name) do
+    [routine_schema, "_", routine_name, "Parser"]
   end
 
   def has_complex_return_type?(%DbRoutine{data_type: data_type}) do

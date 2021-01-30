@@ -8,21 +8,6 @@ defmodule EctoGen.Database.DbRoutineParameter do
     :parameter_default
   ]
 
-  @valid_udt_names [
-    "text",
-    "varchar",
-    "uuid",
-    "int",
-    "int2",
-    "int4",
-    "int8",
-    "int16",
-    "bool",
-    "date",
-    "timestamp",
-    "timestamptz"
-  ]
-
   @enforce_keys @fields
 
   defstruct @fields
@@ -34,15 +19,14 @@ defmodule EctoGen.Database.DbRoutineParameter do
   @type t() :: %RoutineParameter{}
 
   def parse_from_db_row([position, name, mode, udt_name, parameter_default]) do
-    with {:ok, udt_name_validated} <- check_udt_name(udt_name),
-         {:ok, mode_validated} <- check_mode(mode) do
+    with {:ok, mode_validated} <- check_mode(mode) do
       {
         :ok,
         %RoutineParameter{
           position: position,
           name: name,
           mode: mode_validated,
-          udt_name: udt_name_validated,
+          udt_name: udt_name,
           parameter_default: parameter_default
         }
       }
@@ -72,14 +56,7 @@ defmodule EctoGen.Database.DbRoutineParameter do
   def udt_name_to_elixir_term("date"), do: "Date.t()"
   def udt_name_to_elixir_term("timestamp"), do: "DateTime.t()"
   def udt_name_to_elixir_term("timestamptz"), do: "DateTime.t()"
-
-  defp check_udt_name(x), do: {:ok, x}
-
-  defp check_udt_name(udt_name) when not is_binary(udt_name) do
-    {:error, :einv_type}
-  end
-
-  defp check_udt_name(udt_name) when udt_name in @valid_udt_names, do: {:ok, udt_name}
+  def udt_name_to_elixir_term(_), do: "any()"
 
   defp check_mode(mode) when not (mode in ["IN", "OUT"]) do
     {:error, :einv_mode}

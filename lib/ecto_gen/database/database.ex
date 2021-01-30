@@ -127,6 +127,11 @@ defmodule EctoGen.Database do
           from information_schema.columns c
           where c.table_name = $3
             and c.table_schema = coalesce($4, 'public')
+        union
+          select a.ordinal_position::int, a.attribute_name::text, 'OUT', a.attribute_udt_name::text, is_nullable = 'YES'
+          from information_schema.attributes a
+          where a.udt_name = $3
+            and a.udt_schema = coalesce($4, 'public')
           order by ordinal_position;
         """
     else

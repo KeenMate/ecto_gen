@@ -2,58 +2,10 @@
 	def <%= @function_name %>(<%= @input_params_with_default %>) do
 		Logger.debug("Calling stored procedure", procedure: "<%= @function_name %>")
 
-		result =
-			state
-			|> Postgrex.query(
-				pid,
-				"select * from <%= @routine.schema %>.<%= @routine.name %>(<%= @sql_params %>)",
-				[<%= @input_params %>]
-			)
-			|> <%= @parse_function_name %>()
-
-		{:reply, result, state}
-	end
-
-	defp <%= @parse_function_name %>({:error, reason} = err) do
-		Logger.error("Error occured while calling stored procedure", procedure: "<%= @function_name %>", reason: inspect(reason))
-
-		err
-	end
-
-	defp <%= @parse_function_name %>({:ok, %Postgrex.Result{rows: rows}}) do
-		Logger.debug("Parsing successful response from database")
-
-		parsed_results =
-			rows
-			|> Enum.map(&<%= @parse_function_name_result_row %>/1)
-
-		# todo: Handle rows that could not be parsed
-
-		successful_results =
-			parsed_results
-			|> Enum.filter(&(elem(&1, 0) == :ok))
-			|> Enum.map(&(elem(&1, 1)))
-
-		{:ok, successful_results}
-	end
-
-	defp <%= @parse_function_name_result_row %>([<%= @output_params %>]) do
-		{
-			:ok,
-			<%= if @routine_has_complex_data do %>
-			%<%= @routine_result_item_module_name %>{
-				<%= for {%{name: param}, index} <- @output_routine_params |> Enum.with_index() do %>
-				<%= param %>: <%= param %><%= if index != Enum.count(@output_routine_params) do %>, <% end %>
-				<% end %>
-			}
-			<% else %>
-			<%= @output_params %>
-			<% end %>
-		}
-	end
-
-	defp <%= @parse_function_name_result_row %>(unknown_row) do
-		Logger.warn("Found result row that does not have valid number of columns", unknown_row: unknown_row)
-
-		{:error, :einv_columns}
+		Postgrex.query(
+			pid,
+			"select * from <%= @routine.schema %>.<%= @routine.name %>(<%= @sql_params %>)",
+			[<%= @input_params %>]
+		)
+		|> <%= @parse_function_name %>()
 	end

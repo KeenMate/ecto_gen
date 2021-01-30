@@ -81,12 +81,26 @@ defmodule EctoGen.EEx.Helpers do
     if DbRoutine.has_complex_return_type?(routine) do
       [DbRoutine.get_routine_result_item_module_name(routine, module_name), ".t()"]
     else
-      simple_return_type_param_name()
+      DbRoutineParameter.udt_name_to_elixir_term(routine.type_name)
     end
+  end
+
+  @spec get_routine_function_name(EctoGen.Database.DbRoutine.t()) :: binary() | iodata()
+  def get_routine_function_name(%DbRoutine{schema: "public", name: name}) do
+    name
   end
 
   def get_routine_function_name(%DbRoutine{schema: schema, name: name}) do
     [schema, "_", name]
+  end
+
+  @spec get_routine_parser_module_name(binary() | iodata(), binary() | iodata()) :: iodata()
+  def get_routine_parser_module_name(module_name, function_name) do
+    parser_module_name =
+      (function_name <> "_parser")
+      |> Macro.camelize()
+
+    [module_name, ".Parsers.", parser_module_name]
   end
 
   @spec get_routine_parse_function_name(binary() | iodata()) :: iodata()

@@ -33,7 +33,6 @@ defmodule EctoGen.Configuration do
       {key, value} when is_atom(key) ->
         {Atom.to_string(key), value}
 
-
       {key, _value} = kv when is_binary(key) ->
         kv
     end)
