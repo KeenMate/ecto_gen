@@ -22,8 +22,11 @@ erl_crash.dump
 # Ignore package tarball (built via "mix hex.build").
 ecto_gen-*.tar
 
+# Ignore secret config
+/config/*.secret.exs
 
 # Temporary files for e.g. tests
 /tmp
 
+# Ignore generated content
 /eg_output
