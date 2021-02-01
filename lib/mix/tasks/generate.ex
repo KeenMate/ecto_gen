@@ -11,6 +11,10 @@ defmodule Mix.Tasks.Eg.Gen do
   def run(_) do
     Logger.info("Running generate task")
 
+    Application.ensure_all_started(:postgrex)
+
     EctoGen.start()
+
+    Logger.info("Task finished")
   end
 end
