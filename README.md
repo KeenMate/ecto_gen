@@ -32,8 +32,8 @@ config :ecto_gen,
   output_location: "path/to/generated/output", # relative path should be relative to the project root
   output_module: "MyApp.EctoGenOutput", # Module prefix that will be used for generated content
 
-	# This way, you can provide custom template for individual parts of generation
-	# default files are in /priv/templates directory of this package
+  # This way, you can provide custom template for individual parts of generation
+  # default files are in /priv/templates directory of this package
   template_overrides: [
     # db_module: "/path/to/db_module.ex.eex",
     # routine: "/path/to/db_routine.ex.eex",
@@ -41,13 +41,13 @@ config :ecto_gen,
     # routine_parser: "/path/to/db_routine_parser.ex.eex"
   ],
 
-	# This config holds information about what routines (funcs) from database will have generated elixir functions etc.
-	# db project has keys, each representing database's schema which has config for what routines it includes/ingores
+  # This config holds information about what routines (funcs) from database will have generated elixir functions etc.
+  # db project has keys, each representing database's schema which has config for what routines it includes/ingores
   db_project: [
     public: [
       funcs: "*", # or ["func_name_1", "func_name_2"]
 
-			# makes sense to specify ignored functions (routines) only when funcs equal "*"
+      # makes sense to specify ignored functions (routines) only when funcs equal "*"
       ignored_funcs: ["create_menu"]
     ]
   ]
