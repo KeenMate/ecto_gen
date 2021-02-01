@@ -43,8 +43,7 @@ defmodule EctoGen.MixProject do
 
   defp description() do
     """
-    This package (generator) is aimed for those who want to use stored procedures from PostgreSQL database but does not want to write
-    all the boilerplate connected with making sql call and parsing the result manually.
+    This tool offers generating elixir functions that call PostgreSQL stored procedures and parses the result into elixir structs.
     """
   end
 end
