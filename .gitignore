@@ -26,4 +26,4 @@ ecto_gen-*.tar
 # Temporary files for e.g. tests
 /tmp
 
-/lib/eg_output
+/eg_output

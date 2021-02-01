@@ -9,23 +9,33 @@ defmodule EctoGen.EEx.EExGenerator do
 
   @type routine_with_params :: {Database.DbRoutine.t(), [Database.DbRoutineParameter.t()]}
 
+  @file_templates_overrides Application.get_env(:ecto_gen, :template_overrides)
+
   @eex_templates_path Path.join(:code.priv_dir(:ecto_gen), "eex_templates")
 
   EEx.function_from_file(
     :defp,
     :routine_result_item_eex,
-    Path.join(@eex_templates_path, "routine_result_item.ex.eex"),
+    Keyword.get(@file_templates_overrides, :routine_result) ||
+      Path.join(@eex_templates_path, "routine_result_item.ex.eex"),
     [:assigns]
   )
 
-  EEx.function_from_file(:defp, :routine_eex, Path.join(@eex_templates_path, "routine.ex.eex"), [
-    :assigns
-  ])
+  EEx.function_from_file(
+    :defp,
+    :routine_eex,
+    Keyword.get(@file_templates_overrides, :routine) ||
+      Path.join(@eex_templates_path, "routine.ex.eex"),
+    [
+      :assigns
+    ]
+  )
 
   EEx.function_from_file(
     :defp,
     :routine_parser_eex,
-    Path.join(@eex_templates_path, "routine_parser.ex.eex"),
+    Keyword.get(@file_templates_overrides, :routine_parser) ||
+      Path.join(@eex_templates_path, "routine_parser.ex.eex"),
     [
       :assigns
     ]
@@ -34,7 +44,8 @@ defmodule EctoGen.EEx.EExGenerator do
   EEx.function_from_file(
     :defp,
     :db_context_module_eex,
-    Path.join(@eex_templates_path, "db_module.ex.eex"),
+    Keyword.get(@file_templates_overrides, :db_module) ||
+      Path.join(@eex_templates_path, "db_module.ex.eex"),
     [:assigns]
   )
 
@@ -45,9 +56,6 @@ defmodule EctoGen.EEx.EExGenerator do
       routines_with_params
       |> prepare_context_module_assigns(opts)
       |> db_context_module_eex()
-
-    IO.puts("Current dir: #{File.cwd!()}")
-    File.write("temp.ex", result)
 
     result
     |> Code.format_string!()
@@ -87,15 +95,24 @@ defmodule EctoGen.EEx.EExGenerator do
     end)
   end
 
-  @spec generate_routines_parser_modules([routine_with_params()], binary() | iodata()) :: [
+  @spec generate_routines_parser_modules(
+          [routine_with_params()],
+          binary() | iodata(),
+          binary() | iodata()
+        ) :: [
           {Database.DbRoutine.t(), iodata()}
         ]
-  def generate_routines_parser_modules(routines_with_params, module_name) do
+  def generate_routines_parser_modules(routines_with_params, module_name, include_sensitive_data) do
     routines_with_params
     |> Enum.map(fn {routine, routine_params} ->
       {
         routine,
-        prepare_routine_parser_assings(routine, routine_params, module_name)
+        prepare_routine_parser_assings(
+          routine,
+          routine_params,
+          module_name,
+          include_sensitive_data
+        )
       }
     end)
     |> Enum.map(fn {routine, assigns} ->
@@ -158,7 +175,7 @@ defmodule EctoGen.EEx.EExGenerator do
     ]
   end
 
-  def prepare_routine_parser_assings(routine, routine_params, module_name) do
+  def prepare_routine_parser_assings(routine, routine_params, module_name, include_sensitive_data) do
     output_routine_params =
       DbHelpers.filter_routine_params(routine_params, :output)
       |> trim_routine_params_names()
@@ -181,7 +198,8 @@ defmodule EctoGen.EEx.EExGenerator do
           simple_return_type_param_name()
         end,
       routine_result_item_module_name:
-        Database.DbRoutine.get_routine_result_item_module_name(routine, module_name)
+        Database.DbRoutine.get_routine_result_item_module_name(routine, module_name),
+      include_sensitive_data: include_sensitive_data
     ]
   end
 end

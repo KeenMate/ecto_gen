@@ -33,7 +33,8 @@ defmodule EctoGen do
 
     %{
       output_module: output_module,
-      output_location: output_location
+      output_location: output_location,
+      include_sensitive_data: include_sensitive_data
     } = config
 
     sanitized_module_name = sanitize_module_name(output_module)
@@ -41,7 +42,14 @@ defmodule EctoGen do
     prepare_directory_structure(output_location)
 
     create_context_module(routines_with_params, output_location, sanitized_module_name)
-    create_routine_parser_modules(routines_with_params, output_location, sanitized_module_name)
+
+    create_routine_parser_modules(
+      routines_with_params,
+      output_location,
+      sanitized_module_name,
+      include_sensitive_data
+    )
+
     create_routines_results_modules(routines_with_params, output_location, sanitized_module_name)
 
     :ok
@@ -57,10 +65,19 @@ defmodule EctoGen do
     File.write(Path.join(output_location, "db_context.ex"), context_module)
   end
 
-  defp create_routine_parser_modules(routines_with_params, output_location, module_name) do
+  defp create_routine_parser_modules(
+         routines_with_params,
+         output_location,
+         module_name,
+         include_sensitive_data
+       ) do
     Logger.info("Generating routines parser modules")
 
-    EExGenerator.generate_routines_parser_modules(routines_with_params, module_name)
+    EExGenerator.generate_routines_parser_modules(
+      routines_with_params,
+      module_name,
+      include_sensitive_data
+    )
     |> Enum.map(fn {%{schema: routine_schema, name: routine_name}, routine_parser_module_code} ->
       Logger.debug("Writing routine parser module to file")
 
