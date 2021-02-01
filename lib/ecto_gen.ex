@@ -11,7 +11,7 @@ defmodule EctoGen do
   Used to retrieve information from database and create elixir code based on retrieved informations
   like stored procedures.
   """
-  def start(_feeling, _array) do
+  def start() do
     config = EctoGen.Configuration.get_config()
 
     Logger.info("Starting ecto gen application")

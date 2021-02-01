@@ -11,6 +11,6 @@ defmodule Mix.Tasks.Eg.Gen do
   def run(_) do
     Logger.info("Running generate task")
 
-    Mix.Task.run("app.start")
+    EctoGen.start()
   end
 end

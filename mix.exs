@@ -4,7 +4,7 @@ defmodule EctoGen.MixProject do
   def project do
     [
       app: :ecto_gen,
-      version: "0.1.0",
+      version: "0.3.0",
       elixir: "~> 1.11",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -17,8 +17,7 @@ defmodule EctoGen.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger, :eex, :postgrex],
-      mod: {EctoGen, []}
+      extra_applications: [:logger, :eex, :postgrex]
     ]
   end
 

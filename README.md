@@ -17,7 +17,9 @@ end
 
 ## Usage
 
-First, prepare tool's configuration:
+### First
+
+Prepare tool's configuration:
 
 ```elixir
 config :my_app, MyApp.Repo,
@@ -53,8 +55,25 @@ config :ecto_gen,
   ]
 ```
 
+### Generating the DbContext
+
 With this added to your configuration, you can generate the db context issuing following command:
 `$ mix eg.gen`
+
+### Using generated DbContext
+
+Before you start using the generated code you need to start `Postgrex` process (all generated functions to use required as a 1st argument the PID of this `Postgrex` process)
+
+```elixir
+
+{:ok, pg_pid} = Postgrex.start_link(db_config)
+
+alias MyApp.EctoGenOutput, as: EG
+
+EG.DbContext.func_name_1(pg_pid, arg1, arg2)
+
+
+```
 
 Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
