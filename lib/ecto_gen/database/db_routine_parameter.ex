@@ -1,4 +1,6 @@
 defmodule EctoGen.Database.DbRoutineParameter do
+  alias Mix.Shell.IO, as: MixIO
+
   @fields [
     :position,
     :name,
@@ -32,7 +34,7 @@ defmodule EctoGen.Database.DbRoutineParameter do
       }
     else
       err ->
-        Logger.error("Could not parse routine param: #{inspect(err)}")
+        MixIO.error("Could not parse routine param: #{inspect(err)}")
         err
     end
   end

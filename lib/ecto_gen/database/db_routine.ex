@@ -1,4 +1,6 @@
 defmodule EctoGen.Database.DbRoutine do
+  alias Mix.Shell.IO, as: MixIO
+
   @fields [
     :schema,
     :name,
@@ -33,8 +35,10 @@ defmodule EctoGen.Database.DbRoutine do
   end
 
   def parse_from_db_row(value) do
-    Logger.error("Received invalid amount of columns when attempted to parse routine info row",
-      value: inspect(value)
+    MixIO.error(
+      "Received invalid amount of columns when attempted to parse routine info row. value: #{
+        inspect(value)
+      }"
     )
 
     {:error, :einvcolumncount}

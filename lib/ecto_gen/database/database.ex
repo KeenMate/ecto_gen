@@ -1,9 +1,8 @@
 defmodule EctoGen.Database do
   use GenServer
 
-  require Logger
-
   alias EctoGen.Database.{DbRoutine, DbRoutineParameter}
+  alias Mix.Shell.IO, as: MixIO
 
   def start_link(arg) do
     GenServer.start_link(__MODULE__, arg, name: __MODULE__)
@@ -43,8 +42,6 @@ defmodule EctoGen.Database do
         _from,
         state
       ) do
-    Logger.debug("Fetching routine params", routine: inspect(routine_specific_name))
-
     with is_with_return_type <- routine_return_type != nil and routine_return_type_schema != nil,
          query_text <- get_query_text_for_get_routine_params(is_with_return_type),
          query_params <-
@@ -67,8 +64,6 @@ defmodule EctoGen.Database do
   end
 
   def handle_call({:get_routines, schema}, _from, state) when is_binary(schema) do
-    Logger.debug("Fetching all routines for given schema from db", schema: inspect(schema))
-
     result =
       state
       |> Postgrex.query(
@@ -140,11 +135,12 @@ defmodule EctoGen.Database do
   end
 
   defp process_get_routine_params_result({:error, reason} = err, schema, routine_specific_name) do
-    Logger.error("Error occured while retrieving database routine params",
-      reason: inspect(reason),
-      schema: inspect(schema),
-      routine_specific_name: inspect(routine_specific_name)
-    )
+    MixIO.error("""
+    Error occured while retrieving database routine params.
+    schema: #{inspect(schema)}
+    reason: #{inspect(reason)}
+    routine: #{inspect(routine_specific_name)}
+    """)
 
     err
   end
@@ -167,9 +163,9 @@ defmodule EctoGen.Database do
   end
 
   defp process_get_routines_result({:error, reason} = err, schema) do
-    Logger.error("Error occured while retrieving database routines",
-      reason: inspect(reason),
-      schema: inspect(schema)
+    MixIO.error(
+      "Error occured while retrieving database routines. schema: #{inspect(schema)}." <>
+        "reason: #{inspect(reason)}"
     )
 
     err

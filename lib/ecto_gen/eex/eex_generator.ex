@@ -130,8 +130,6 @@ defmodule EctoGen.EEx.EExGenerator do
 
   @spec prepare_context_module_assigns([routine_with_params()], keyword()) :: keyword()
   def prepare_context_module_assigns(routines_with_params, opts) do
-    Logger.debug("Preparing db context module assigns")
-
     module_name = opts |> Keyword.get(:module_name)
 
     routines_assigns =
@@ -152,8 +150,6 @@ defmodule EctoGen.EEx.EExGenerator do
           binary()
         ) :: keyword()
   def prepare_routine_assigns(routine, routine_params, module_name) do
-    Logger.debug("Preparing routine assigns", routine: routine.name)
-
     input_routine_params =
       DbHelpers.filter_routine_params(routine_params, :input)
       |> trim_routine_params_names()
