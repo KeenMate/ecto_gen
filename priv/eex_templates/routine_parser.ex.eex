@@ -35,6 +35,8 @@ defmodule <%= @module_name %> do
 			|> Enum.filter(&(elem(&1, 0) == :ok))
 			|> Enum.map(&(elem(&1, 1)))
 
+		Logger.debug("Parsed response")
+
 		{:ok, successful_results}
 	end
 

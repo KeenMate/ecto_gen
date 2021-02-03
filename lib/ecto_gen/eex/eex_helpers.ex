@@ -55,7 +55,7 @@ defmodule EctoGen.EEx.Helpers do
           binary() | iodata()
         ) :: iodata()
   def generate_function_spec(routine, input_params, module_name) do
-    result = ["@spec ", get_routine_function_name(routine), "(pid()"]
+    result = ["@spec ", DbRoutine.get_routine_function_name(routine), "(pid()"]
 
     result =
       input_params
@@ -94,19 +94,11 @@ defmodule EctoGen.EEx.Helpers do
     ]
   end
 
-  @spec get_routine_function_name(EctoGen.Database.DbRoutine.t()) :: binary() | iodata()
-  def get_routine_function_name(%DbRoutine{schema: "public", name: name}) do
-    name
-  end
-
-  def get_routine_function_name(%DbRoutine{schema: schema, name: name}) do
-    [schema, "_", name]
-  end
-
   @spec get_routine_parser_module_name(binary() | iodata(), binary() | iodata()) :: iodata()
   def get_routine_parser_module_name(module_name, function_name) do
     parser_module_name =
-      (function_name <> "_parser")
+      [function_name, "_parser"]
+      |> IO.iodata_to_binary()
       |> Macro.camelize()
 
     [module_name, ".Parsers.", parser_module_name]

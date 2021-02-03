@@ -15,18 +15,32 @@ defmodule Mix.Tasks.Eg.Gen do
     Application.ensure_all_started(:postgrex)
 
     config = EctoGen.Configuration.get_config()
-    EctoGen.Application.start_link(config)
+    {:ok, pg_pid} = Postgrex.start_link(config.database)
 
-    do_magic(config)
+    config
+    |> do_magic(pg_pid)
 
     MixIO.info("Task finished")
   end
 
-  defp do_magic(config) do
+  defp do_magic(config, pg_pid) do
     %{db_project: db_project_config} = config
 
     MixIO.info("Getting routines from database")
-    routines_with_params = Database.Helpers.get_routines_with_params_to_create(db_project_config)
+
+    {time, routines_with_params} =
+      :timer.tc(fn ->
+        Database.Helpers.get_routines_with_params_to_create(pg_pid, db_project_config)
+        # |> Enum.map(fn {routine, params} ->
+        #   {
+        #     routine
+        #     |> Database.DbRoutine.to_routine_with_unique_name(),
+        #     params
+        #   }
+        # end)
+      end)
+
+    MixIO.info("Fetching routines took: #{inspect(time)}")
 
     %{
       output_module: output_module,
@@ -75,9 +89,11 @@ defmodule Mix.Tasks.Eg.Gen do
       module_name,
       include_sensitive_data
     )
-    |> Enum.map(fn {%{schema: routine_schema, name: routine_name}, routine_parser_module_code} ->
+    |> Enum.map(fn {routine, routine_parser_module_code} ->
       routine_parser_filename =
-        Database.DbRoutine.get_routine_parser_name(routine_schema, routine_name)
+        routine
+        |> Database.DbRoutine.to_routine_with_unique_name()
+        |> Database.DbRoutine.get_routine_parser_name()
         |> IO.iodata_to_binary()
         |> Macro.underscore()
 
@@ -96,9 +112,11 @@ defmodule Mix.Tasks.Eg.Gen do
     MixIO.info("Generating routines result items modules")
 
     EExGenerator.generate_routines_results_modules(routines_with_params, module_name)
-    |> Enum.map(fn {%{schema: routine_schema, name: routine_name}, routine_result_module_code} ->
+    |> Enum.map(fn {routine, routine_result_module_code} ->
       routine_result_struct_filename =
-        Database.DbRoutine.get_routine_result_item_struct_name(routine_schema, routine_name)
+        routine
+        |> Database.DbRoutine.to_routine_with_unique_name()
+        |> Database.DbRoutine.get_routine_result_item_struct_name()
         |> IO.iodata_to_binary()
         |> Macro.underscore()
 
@@ -149,7 +167,9 @@ defmodule Mix.Tasks.Eg.Gen do
           {:exist, x}
 
         {:error, reason} ->
-          MixIO.error("Could not create directory at output location. reason: #{inspect(reason)}")
+          Mix.raise(
+            "Could not create directory at output location: #{x}. reason: #{inspect(reason)}"
+          )
 
           {:error, x}
       end

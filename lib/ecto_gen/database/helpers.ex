@@ -1,29 +1,31 @@
 defmodule EctoGen.Database.Helpers do
   alias EctoGen.Database
 
-  @spec get_routines_with_params_to_create(Keyword.t()) :: [
+  @spec get_routines_with_params_to_create(pid(), Keyword.t()) :: [
           {Database.DbRoutine.t(), [Database.DbRoutineParameter.t()]}
         ]
-  def get_routines_with_params_to_create(db_project) do
-    db_project
-    |> get_routines_to_create()
-    |> Enum.map(&get_routine_params/1)
+  def get_routines_with_params_to_create(pg_pid, db_project) do
+    pg_pid
+    |> get_routines_to_create(db_project)
+    |> Enum.map(&Task.async(fn -> get_routine_params(pg_pid, &1) end))
+    |> Enum.map(&Task.await/1)
     # todo: do something with routine params calls that did not succeed
     |> Enum.filter(&(elem(&1, 0) == :ok))
     |> Enum.map(&elem(&1, 1))
   end
 
-  def get_routines_to_create(db_project) do
+  def get_routines_to_create(pg_pid, db_project) do
     db_project
     |> Enum.flat_map(fn {schema, config} ->
-      schema
-      |> Database.get_routines()
+      pg_pid
+      |> Database.get_routines(schema)
       |> process_loaded_routines(config)
     end)
   end
 
-  def get_routine_params(%Database.DbRoutine{data_type: "USER-DEFINED"} = routine) do
+  def get_routine_params(pg_pid, %Database.DbRoutine{data_type: "USER-DEFINED"} = routine) do
     case Database.get_routine_params(
+           pg_pid,
            routine.schema,
            routine.specific_name,
            routine.type_schema,
@@ -37,8 +39,8 @@ defmodule EctoGen.Database.Helpers do
     end
   end
 
-  def get_routine_params(%Database.DbRoutine{} = routine) do
-    case Database.get_routine_params(routine.schema, routine.specific_name) do
+  def get_routine_params(pg_pid, %Database.DbRoutine{} = routine) do
+    case Database.get_routine_params(pg_pid, routine.schema, routine.specific_name) do
       {:ok, routine_params} ->
         {:ok, {routine, routine_params}}
 

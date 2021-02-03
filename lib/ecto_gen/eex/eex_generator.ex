@@ -73,7 +73,9 @@ defmodule EctoGen.EEx.EExGenerator do
         routine,
         [
           module_name:
-            Database.DbRoutine.get_routine_result_item_module_name(routine, module_name),
+            routine
+            |> Database.DbRoutine.to_routine_with_unique_name()
+            |> Database.DbRoutine.get_routine_result_item_module_name(module_name),
           routine_result_fields:
             routine_params
             |> Enum.filter(&(&1.mode == "OUT"))
@@ -83,13 +85,10 @@ defmodule EctoGen.EEx.EExGenerator do
       }
     end)
     |> Enum.map(fn {routine, assigns} ->
-      result =
-        assigns
-        |> routine_result_item_eex()
-
       {
         routine,
-        result
+        assigns
+        |> routine_result_item_eex()
         |> Code.format_string!()
       }
     end)
@@ -154,26 +153,32 @@ defmodule EctoGen.EEx.EExGenerator do
       DbHelpers.filter_routine_params(routine_params, :input)
       |> trim_routine_params_names()
 
-    function_name = get_routine_function_name(routine)
+    unique_routine =
+      routine
+      |> Database.DbRoutine.to_routine_with_unique_name()
+
+    unique_function_name =
+      unique_routine
+      |> Database.DbRoutine.get_routine_function_name()
 
     [
       routine: routine,
-      function_name: function_name,
-      function_spec: generate_function_spec(routine, input_routine_params, module_name),
+      function_name: unique_function_name,
+      function_spec: generate_function_spec(unique_routine, input_routine_params, module_name),
       sql_params: generate_sql_params(input_routine_params),
       input_params: generate_function_params(input_routine_params),
       input_params_with_default: generate_function_params(input_routine_params, true),
       parse_function_name: [
-        get_routine_parser_module_name(module_name, function_name),
+        get_routine_parser_module_name(module_name, unique_function_name),
         ".",
-        get_routine_parse_function_name(function_name)
+        get_routine_parse_function_name(unique_function_name)
       ]
     ]
   end
 
   @spec prepare_routine_parser_assings(
-          EctoGen.Database.DbRoutine.t(),
-          [EctoGen.Database.DbRoutineParameter.t()],
+          Database.DbRoutine.t(),
+          [Database.DbRoutineParameter.t()],
           binary
           | maybe_improper_list(
               binary | maybe_improper_list(any, binary | []) | byte,
@@ -188,15 +193,25 @@ defmodule EctoGen.EEx.EExGenerator do
 
     routine_has_complex_data = Database.DbRoutine.has_complex_return_type?(routine)
 
-    function_name = get_routine_function_name(routine)
+    routine_with_unique_name =
+      routine
+      |> Database.DbRoutine.to_routine_with_unique_name()
+
+    unique_function_name =
+      routine_with_unique_name
+      |> Database.DbRoutine.get_routine_function_name()
+
+    function_name =
+      routine
+      |> Database.DbRoutine.get_routine_function_name()
 
     [
-      module_name: get_routine_parser_module_name(module_name, function_name),
+      module_name: get_routine_parser_module_name(module_name, unique_function_name),
       function_name: function_name,
-      parse_function_name_result_row: get_routine_parse_function_name(function_name, true),
+      parse_function_name_result_row: get_routine_parse_function_name(unique_function_name, true),
       routine_has_complex_data: routine_has_complex_data,
       output_routine_params: output_routine_params,
-      parse_function_name: get_routine_parse_function_name(function_name),
+      parse_function_name: get_routine_parse_function_name(unique_function_name),
       output_params:
         if routine_has_complex_data do
           generate_function_params(output_routine_params)
@@ -204,7 +219,7 @@ defmodule EctoGen.EEx.EExGenerator do
           simple_return_type_param_name()
         end,
       routine_result_item_module_name:
-        Database.DbRoutine.get_routine_result_item_module_name(routine, module_name),
+        Database.DbRoutine.get_routine_result_item_module_name(routine_with_unique_name, module_name),
       routine_result_item_type:
         if routine_has_complex_data do
           nil

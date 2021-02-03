@@ -1,7 +1,6 @@
 defmodule EctoGen.Database.DbRoutine do
-  alias Mix.Shell.IO, as: MixIO
-
   @fields [
+    :row_number,
     :schema,
     :name,
     :specific_name,
@@ -16,14 +15,16 @@ defmodule EctoGen.Database.DbRoutine do
 
   require Logger
 
+  alias Mix.Shell.IO, as: MixIO
   alias EctoGen.Database.DbRoutine
 
   @type t() :: %DbRoutine{}
 
-  def parse_from_db_row([schema, routine_name, specific_name, data_type, type_schema, type_name]) do
+  def parse_from_db_row([row_number, schema, routine_name, specific_name, data_type, type_schema, type_name]) do
     {
       :ok,
       %DbRoutine{
+        row_number: row_number,
         schema: schema,
         name: routine_name,
         specific_name: specific_name,
@@ -45,17 +46,37 @@ defmodule EctoGen.Database.DbRoutine do
   end
 
   @doc """
+  Returns the name used for function in new generated code.
+  Makes sure each function overload distinguisheable.
+  """
+  @spec get_routine_function_name(t()) :: binary() | iodata()
+  def get_routine_function_name(%DbRoutine{schema: "public", name: name}) do
+    name
+  end
+
+  def get_routine_function_name(%DbRoutine{schema: schema, name: name}) do
+    [schema, "_", name]
+  end
+
+  def to_routine_with_unique_name(%DbRoutine{row_number: row_number, name: name} = routine) when is_number(row_number) and row_number > 1 do
+    %DbRoutine{routine | row_number: {:used, row_number}, name: [name, "_", Integer.to_string(row_number - 1)] }
+  end
+
+  def to_routine_with_unique_name(routine), do: routine
+
+  @doc """
   Returns fully-qualified module name where function's return struct should be.
   """
   @spec get_routine_result_item_module_name(t(), binary() | iodata()) :: iodata() | nil
   def get_routine_result_item_module_name(
-        %DbRoutine{name: routine_name, schema: routine_schema} = routine,
+        %DbRoutine{} = routine,
         module_name
       ) do
     case has_complex_return_type?(routine) do
       true ->
         result_item_name =
-          get_routine_result_item_struct_name(routine_schema, routine_name)
+          routine
+          |> get_routine_result_item_struct_name()
           |> IO.iodata_to_binary()
           |> Macro.camelize()
 
@@ -66,19 +87,19 @@ defmodule EctoGen.Database.DbRoutine do
     end
   end
 
-  @spec get_routine_result_item_struct_name(binary() | iodata(), binary() | iodata()) :: iodata()
-  def get_routine_result_item_struct_name("public", routine_name) do
+  @spec get_routine_result_item_struct_name(t()) :: iodata()
+  def get_routine_result_item_struct_name(%DbRoutine{schema: "public", name: routine_name}) do
     [routine_name, "Item"]
   end
 
-  def get_routine_result_item_struct_name(routine_schema, routine_name) do
+  def get_routine_result_item_struct_name(%DbRoutine{schema: routine_schema, name: routine_name}) do
     [routine_schema, "_", routine_name, "Item"]
   end
 
-  @spec get_routine_parser_name(binary() | iodata(), binary() | iodata()) :: iodata()
-  def get_routine_parser_name("public", routine_name), do: [routine_name, "Parser"]
+  @spec get_routine_parser_name(t()) :: iodata()
+  def get_routine_parser_name(%DbRoutine{schema: "public", name: routine_name}), do: [routine_name, "Parser"]
 
-  def get_routine_parser_name(routine_schema, routine_name) do
+  def get_routine_parser_name(%DbRoutine{schema: routine_schema, name: routine_name}) do
     [routine_schema, "_", routine_name, "Parser"]
   end
 

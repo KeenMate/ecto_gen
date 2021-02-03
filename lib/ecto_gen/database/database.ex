@@ -1,46 +1,39 @@
 defmodule EctoGen.Database do
-  use GenServer
-
   alias EctoGen.Database.{DbRoutine, DbRoutineParameter}
   alias Mix.Shell.IO, as: MixIO
 
-  def start_link(arg) do
-    GenServer.start_link(__MODULE__, arg, name: __MODULE__)
+  @spec get_routines(pid(), binary()) :: {:ok, [DbRoutine.t()]} | {:error, Postgrex.Error.t()}
+  def get_routines(pg_pid, schema) do
+    Postgrex.query(
+      pg_pid,
+      """
+      select row_number() over (PARTITION BY routine_schema, routine_name),
+        r.routine_schema::text,
+        r.routine_name::text,
+        r.specific_name::text,
+        r.data_type,
+        r.type_udt_schema::text,
+        r.type_udt_name::text
+      from information_schema.routines r
+      left join (select specific_schema, specific_name, count(*) as param_count from
+        information_schema.parameters p
+        group by  specific_schema, specific_name) p on p.specific_schema = r.specific_schema and p.specific_name = r.specific_name
+      where r.specific_schema = $1
+      order by routine_schema, routine_name;
+      """,
+      [schema]
+    )
+    |> process_get_routines_result(schema)
   end
 
-  def init(arg) do
-    {:ok, db_pid} = Postgrex.start_link(arg)
-
-    {:ok, db_pid}
-  end
-
-  @spec get_routines(binary()) :: {:ok, [DbRoutine.t()]} | {:error, Postgrex.Error.t()}
-  def get_routines(schema) do
-    GenServer.call(__MODULE__, {:get_routines, schema})
-  end
-
-  @spec get_routine_params(binary(), binary(), binary() | nil, binary() | nil) ::
+  @spec get_routine_params(pid(), binary(), binary(), binary() | nil, binary() | nil) ::
           {:ok, [DbRoutineParameter.t()]} | {:error, Postgrex.Error.t()}
   def get_routine_params(
+        pg_pid,
         schema,
         routine_specific_name,
         routine_return_type_schema \\ nil,
         routine_return_type \\ nil
-      ) do
-    GenServer.call(
-      __MODULE__,
-      {:get_routine_params, schema, routine_specific_name, routine_return_type_schema,
-       routine_return_type}
-    )
-  end
-
-  # GenServer implementation
-
-  def handle_call(
-        {:get_routine_params, schema, routine_specific_name, routine_return_type_schema,
-         routine_return_type},
-        _from,
-        state
       ) do
     with is_with_return_type <- routine_return_type != nil and routine_return_type_schema != nil,
          query_text <- get_query_text_for_get_routine_params(is_with_return_type),
@@ -53,35 +46,14 @@ defmodule EctoGen.Database do
              routine_return_type_schema
            ),
          result <-
-           state
-           |> Postgrex.query(
+           Postgrex.query(
+             pg_pid,
              query_text,
              query_params
            )
            |> process_get_routine_params_result(schema, routine_specific_name) do
-      {:reply, result, state}
+      result
     end
-  end
-
-  def handle_call({:get_routines, schema}, _from, state) when is_binary(schema) do
-    result =
-      state
-      |> Postgrex.query(
-        """
-          select routine_schema::text,
-            routine_name::text,
-            specific_name::text,
-            data_type,
-            type_udt_schema::text,
-            type_udt_name::text
-          from information_schema.routines
-          where specific_schema = $1;
-        """,
-        [schema]
-      )
-      |> process_get_routines_result(schema)
-
-    {:reply, result, state}
   end
 
   # Private members
@@ -135,11 +107,10 @@ defmodule EctoGen.Database do
   end
 
   defp process_get_routine_params_result({:error, reason} = err, schema, routine_specific_name) do
-    MixIO.error("""
+    Mix.raise("""
     Error occured while retrieving database routine params.
-    schema: #{inspect(schema)}
+    schema: #{inspect(schema)} routine: #{inspect(routine_specific_name)}
     reason: #{inspect(reason)}
-    routine: #{inspect(routine_specific_name)}
     """)
 
     err
