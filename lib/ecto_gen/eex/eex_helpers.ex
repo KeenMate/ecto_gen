@@ -68,7 +68,7 @@ defmodule EctoGen.EEx.Helpers do
         ]
       end)
 
-    [result, ") :: ", get_function_return_spec(routine, module_name)]
+    [result, ") :: {:error, any()} | {:ok, ", get_function_return_spec(routine, module_name), "}"]
   end
 
   def sort_function_params_by_postion(routine_params) do
@@ -78,11 +78,20 @@ defmodule EctoGen.EEx.Helpers do
 
   @spec get_function_return_spec(DbRoutine.t(), binary() | iodata()) :: iodata()
   def get_function_return_spec(routine, module_name) do
-    if DbRoutine.has_complex_return_type?(routine) do
-      [DbRoutine.get_routine_result_item_module_name(routine, module_name), ".t()"]
-    else
-      DbRoutineParameter.udt_name_to_elixir_term(routine.type_name)
-    end
+    [
+      "[",
+      case {
+        DbRoutine.has_complex_return_type?(routine),
+        DbRoutine.get_routine_result_item_module_name(routine, module_name)
+      } do
+        {true, routine_result_item_module_name} when routine_result_item_module_name != nil ->
+          [DbRoutine.get_routine_result_item_module_name(routine, module_name), ".t()"]
+
+        _ ->
+          DbRoutineParameter.udt_name_to_elixir_term(routine.type_name)
+      end,
+      "]"
+    ]
   end
 
   @spec get_routine_function_name(EctoGen.Database.DbRoutine.t()) :: binary() | iodata()

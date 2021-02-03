@@ -47,7 +47,7 @@ defmodule EctoGen.Database.DbRoutine do
   @doc """
   Returns fully-qualified module name where function's return struct should be.
   """
-  @spec get_routine_result_item_module_name(t(), binary() | iodata()) :: iodata()
+  @spec get_routine_result_item_module_name(t(), binary() | iodata()) :: iodata() | nil
   def get_routine_result_item_module_name(
         %DbRoutine{name: routine_name, schema: routine_schema} = routine,
         module_name

@@ -1,11 +1,11 @@
 <%= @function_spec %>
-	def <%= @function_name %>(<%= @input_params_with_default %>) do
-		Logger.debug("Calling stored procedure", procedure: "<%= @function_name %>")
+def <%= @function_name %>(<%= @input_params_with_default %>) do
+	Logger.debug("Calling stored procedure", procedure: "<%= @function_name %>")
 
-		Postgrex.query(
-			pid,
-			"select * from <%= @routine.schema %>.<%= @routine.name %>(<%= @sql_params %>)",
-			[<%= @input_params %>]
-		)
-		|> <%= @parse_function_name %>()
-	end
+	Postgrex.query(
+		pid,
+		"select * from <%= @routine.schema %>.<%= @routine.name %>(<%= @sql_params %>)",
+		[<%= @input_params %>]
+	)
+	|> <%= @parse_function_name %>()
+end

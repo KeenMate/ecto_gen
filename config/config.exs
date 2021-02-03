@@ -3,8 +3,8 @@ import Config
 config :ecto_gen,
   otp_app: :ecto_gen,
   db_config: MyApp.Repo,
-  output_location: "eg_output",
-  output_module: "MyApp.EctoGenOutput",
+  output_location: "lib/eg_output",
+  output_module: "MyApp.Database",
   # template_overrides: [
   #   db_module: "/path/to/db_module.ex.eex",
   #   routine: "/path/to/db_routine.ex.eex",

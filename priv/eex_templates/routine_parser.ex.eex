@@ -8,6 +8,13 @@ defmodule <%= @module_name %> do
 
 	require Logger
 
+	@spec <%= @parse_function_name %>({:ok, Postgrex.Result.t()} | {:error, any()}) :: {:ok, [
+	<%= if @routine_has_complex_data do %>
+		<%= @routine_result_item_module_name %>.t()
+	<% else %>
+		<%= @routine_result_item_type %>
+	<% end %>]}
+		| {:error, any()}
 	def <%= @parse_function_name %>({:error, reason} = err) do
 		Logger.error("Error occured while calling stored procedure", procedure: "<%= @function_name %>", reason: inspect(reason))
 

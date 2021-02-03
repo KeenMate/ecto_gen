@@ -171,6 +171,16 @@ defmodule EctoGen.EEx.EExGenerator do
     ]
   end
 
+  @spec prepare_routine_parser_assings(
+          EctoGen.Database.DbRoutine.t(),
+          [EctoGen.Database.DbRoutineParameter.t()],
+          binary
+          | maybe_improper_list(
+              binary | maybe_improper_list(any, binary | []) | byte,
+              binary | []
+            ),
+          any
+        ) :: keyword()
   def prepare_routine_parser_assings(routine, routine_params, module_name, include_sensitive_data) do
     output_routine_params =
       DbHelpers.filter_routine_params(routine_params, :output)
@@ -195,6 +205,12 @@ defmodule EctoGen.EEx.EExGenerator do
         end,
       routine_result_item_module_name:
         Database.DbRoutine.get_routine_result_item_module_name(routine, module_name),
+      routine_result_item_type:
+        if routine_has_complex_data do
+          nil
+        else
+          Database.DbRoutineParameter.udt_name_to_elixir_term(routine.type_name)
+        end,
       include_sensitive_data: include_sensitive_data
     ]
   end
