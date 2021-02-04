@@ -61,12 +61,18 @@ defmodule EctoGen.EEx.Helpers do
       input_params
       |> sort_function_params_by_postion()
       |> Enum.with_index()
-      |> Enum.reduce(result, fn {%{udt_name: udt_name}, index}, acc ->
-        [
-          acc,
-          if(index != 0, do: ", ", else: []),
-          DbRoutineParameter.udt_name_to_elixir_term(udt_name)
-        ]
+      |> Enum.reduce(result, fn
+        {
+          %{udt_name: udt_name, parameter_default: has_default},
+          index
+        },
+        acc ->
+          [
+            acc,
+            if(index != 0, do: ", ", else: []),
+            DbRoutineParameter.udt_name_to_elixir_term(udt_name),
+            if(has_default, do: " | nil", else: [])
+          ]
       end)
 
     [result, ") :: {:error, any()} | {:ok, ", get_function_return_spec(routine, module_name), "}"]

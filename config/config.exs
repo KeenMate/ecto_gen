@@ -13,8 +13,12 @@ config :ecto_gen,
   # ],
   db_project: [
     public: [
-      funcs: "*",
-      ignored_funcs: ["create_menu"]
+      funcs: [
+        "get_all_menu",
+        "toggle_menu_visibility",
+        "toggle_menu_new_state"
+      ]
+      # ignored_funcs: ["create_menu"]
     ]
   ]
 
