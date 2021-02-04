@@ -130,6 +130,7 @@ defmodule EctoGen.EEx.EExGenerator do
   @spec prepare_context_module_assigns([routine_with_params()], keyword()) :: keyword()
   def prepare_context_module_assigns(routines_with_params, opts) do
     module_name = opts |> Keyword.get(:module_name)
+    repo_module = opts |> Keyword.get(:repo_module)
 
     routines_assigns =
       routines_with_params
@@ -139,7 +140,8 @@ defmodule EctoGen.EEx.EExGenerator do
 
     [
       routines: routines_assigns,
-      module_name: module_name
+      module_name: module_name,
+      repo_module: repo_module
     ]
   end
 
@@ -219,7 +221,10 @@ defmodule EctoGen.EEx.EExGenerator do
           simple_return_type_param_name()
         end,
       routine_result_item_module_name:
-        Database.DbRoutine.get_routine_result_item_module_name(routine_with_unique_name, module_name),
+        Database.DbRoutine.get_routine_result_item_module_name(
+          routine_with_unique_name,
+          module_name
+        ),
       routine_result_item_type:
         if routine_has_complex_data do
           nil

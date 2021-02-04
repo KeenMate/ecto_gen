@@ -9,6 +9,7 @@ defmodule EctoGen.Configuration do
 
     %{
       database: Application.get_env(db_otp_app, db_config_key),
+      db_config: db_config_key,
       db_project: get_db_project(),
       output_location: Application.get_env(:ecto_gen, :output_location),
       output_module: Application.get_env(:ecto_gen, :output_module),

@@ -2,8 +2,7 @@
 def <%= @function_name %>(<%= @input_params_with_default %>) do
 	Logger.debug("Calling stored procedure", procedure: "<%= @routine.name %>")
 
-	Postgrex.query(
-		pid,
+	query(
 		"select * from <%= @routine.schema %>.<%= @routine.name %>(<%= @sql_params %>)",
 		[<%= @input_params %>]
 	)

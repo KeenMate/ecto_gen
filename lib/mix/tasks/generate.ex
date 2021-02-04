@@ -45,14 +45,20 @@ defmodule Mix.Tasks.Eg.Gen do
     %{
       output_module: output_module,
       output_location: output_location,
-      include_sensitive_data: include_sensitive_data
+      include_sensitive_data: include_sensitive_data,
+      db_config: repo_module
     } = config
 
     sanitized_module_name = sanitize_module_name(output_module)
 
     prepare_directory_structure(output_location)
 
-    create_context_module(routines_with_params, output_location, sanitized_module_name)
+    create_context_module(
+      routines_with_params,
+      output_location,
+      sanitized_module_name,
+      repo_module
+    )
 
     create_routine_parser_modules(
       routines_with_params,
@@ -66,11 +72,15 @@ defmodule Mix.Tasks.Eg.Gen do
     :ok
   end
 
-  defp create_context_module(routines_with_params, output_location, module_name) do
+  defp create_context_module(routines_with_params, output_location, module_name, repo_module) do
     MixIO.info("Generating context module")
 
     context_module =
-      EExGenerator.generate_context_module(routines_with_params, module_name: module_name)
+      routines_with_params
+      |> EExGenerator.generate_context_module(
+        module_name: module_name,
+        repo_module: repo_module
+      )
 
     MixIO.info("Creating db_context.ex")
     File.write(Path.join(output_location, "db_context.ex"), context_module)

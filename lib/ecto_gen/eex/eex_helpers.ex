@@ -12,7 +12,7 @@ defmodule EctoGen.EEx.Helpers do
     routine_params
     |> sort_function_params_by_postion()
     |> Enum.reduce(
-      if(is_function_header, do: ["pid"], else: []),
+      [],
       fn %{name: param_name, parameter_default: default_value}, acc ->
         [
           if acc == [] do
@@ -55,15 +55,16 @@ defmodule EctoGen.EEx.Helpers do
           binary() | iodata()
         ) :: iodata()
   def generate_function_spec(routine, input_params, module_name) do
-    result = ["@spec ", DbRoutine.get_routine_function_name(routine), "(pid()"]
+    result = ["@spec ", DbRoutine.get_routine_function_name(routine), "("]
 
     result =
       input_params
       |> sort_function_params_by_postion()
-      |> Enum.reduce(result, fn %{udt_name: udt_name}, acc ->
+      |> Enum.with_index()
+      |> Enum.reduce(result, fn {%{udt_name: udt_name}, index}, acc ->
         [
           acc,
-          ", ",
+          if(index != 0, do: ", ", else: []),
           DbRoutineParameter.udt_name_to_elixir_term(udt_name)
         ]
       end)
