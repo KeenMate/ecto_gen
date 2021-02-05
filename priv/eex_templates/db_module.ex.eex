@@ -4,8 +4,7 @@
 defmodule <%= @module_name %>.DbContext do
 	@moduledoc """
 	This module contains functions for calling DB's stored procedures.
-
-	Functions inside this module require as a first argument a pid. It is the pid of Postgrex driver process.
+	Functions of this module uses `query/2` function of Repo that you have provided (`db_config` key of configuration)
 	"""
 
 	require Logger
