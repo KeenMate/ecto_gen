@@ -6,5 +6,9 @@ def <%= @function_name %>(<%= @input_params_with_default %>) do
 		"select * from <%= @routine.schema %>.<%= @routine.name %>(<%= @sql_params %>)",
 		[<%= @input_params %>]
 	)
+	<%= if @routine_has_return_type do %>
 	|> <%= @parse_function_name %>()
+	<% else %>
+	:ok
+	<% end %>
 end
