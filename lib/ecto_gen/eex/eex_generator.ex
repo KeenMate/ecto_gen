@@ -103,6 +103,7 @@ defmodule EctoGen.EEx.EExGenerator do
         ]
   def generate_routines_parser_modules(routines_with_params, module_name, include_sensitive_data) do
     routines_with_params
+    |> Enum.filter(&Database.DbRoutine.has_return_type(elem(&1, 0)))
     |> Enum.map(fn {routine, routine_params} ->
       {
         routine,
@@ -155,6 +156,8 @@ defmodule EctoGen.EEx.EExGenerator do
       DbHelpers.filter_routine_params(routine_params, :input)
       |> trim_routine_params_names()
 
+    has_return_type = Database.DbRoutine.has_return_type(routine)
+
     unique_routine =
       routine
       |> Database.DbRoutine.to_routine_with_unique_name()
@@ -170,11 +173,17 @@ defmodule EctoGen.EEx.EExGenerator do
       sql_params: generate_sql_params(input_routine_params),
       input_params: generate_function_params(input_routine_params),
       input_params_with_default: generate_function_params(input_routine_params, true),
-      parse_function_name: [
-        get_routine_parser_module_name(module_name, unique_function_name),
-        ".",
-        get_routine_parse_function_name(unique_function_name)
-      ]
+      routine_has_return_type: has_return_type,
+      parse_function_name:
+        if has_return_type do
+          [
+            get_routine_parser_module_name(module_name, unique_function_name),
+            ".",
+            get_routine_parse_function_name(unique_function_name)
+          ]
+        else
+          []
+        end
     ]
   end
 
@@ -193,7 +202,9 @@ defmodule EctoGen.EEx.EExGenerator do
       DbHelpers.filter_routine_params(routine_params, :output)
       |> trim_routine_params_names()
 
-    routine_has_complex_data = Database.DbRoutine.has_complex_return_type?(routine)
+    routine_has_complex_data =
+      routine
+      |> Database.DbRoutine.has_complex_return_type?()
 
     routine_with_unique_name =
       routine
@@ -226,10 +237,10 @@ defmodule EctoGen.EEx.EExGenerator do
           module_name
         ),
       routine_result_item_type:
-        if routine_has_complex_data do
-          nil
-        else
+        unless routine_has_complex_data do
           Database.DbRoutineParameter.udt_name_to_elixir_term(routine.type_name)
+        else
+          nil
         end,
       include_sensitive_data: include_sensitive_data
     ]
