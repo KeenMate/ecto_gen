@@ -20,7 +20,15 @@ defmodule EctoGen.Database.DbRoutine do
 
   @type t() :: %DbRoutine{}
 
-  def parse_from_db_row([row_number, schema, routine_name, specific_name, data_type, type_schema, type_name]) do
+  def parse_from_db_row([
+        row_number,
+        schema,
+        routine_name,
+        specific_name,
+        data_type,
+        type_schema,
+        type_name
+      ]) do
     {
       :ok,
       %DbRoutine{
@@ -58,8 +66,13 @@ defmodule EctoGen.Database.DbRoutine do
     [schema, "_", name]
   end
 
-  def to_routine_with_unique_name(%DbRoutine{row_number: row_number, name: name} = routine) when is_number(row_number) and row_number > 1 do
-    %DbRoutine{routine | row_number: {:used, row_number}, name: [name, "_", Integer.to_string(row_number - 1)] }
+  def to_routine_with_unique_name(%DbRoutine{row_number: row_number, name: name} = routine)
+      when is_number(row_number) and row_number > 1 do
+    %DbRoutine{
+      routine
+      | row_number: {:used, row_number},
+        name: [name, "_", Integer.to_string(row_number - 1)]
+    }
   end
 
   def to_routine_with_unique_name(routine), do: routine
@@ -97,7 +110,8 @@ defmodule EctoGen.Database.DbRoutine do
   end
 
   @spec get_routine_parser_name(t()) :: iodata()
-  def get_routine_parser_name(%DbRoutine{schema: "public", name: routine_name}), do: [routine_name, "Parser"]
+  def get_routine_parser_name(%DbRoutine{schema: "public", name: routine_name}),
+    do: [routine_name, "Parser"]
 
   def get_routine_parser_name(%DbRoutine{schema: routine_schema, name: routine_name}) do
     [routine_schema, "_", routine_name, "Parser"]
@@ -105,5 +119,11 @@ defmodule EctoGen.Database.DbRoutine do
 
   def has_complex_return_type?(%DbRoutine{data_type: data_type}) do
     data_type in ["USER-DEFINED", "record"]
+  end
+
+  def has_return_type(%DbRoutine{} = routine) do
+    routine.data_type != nil or
+      routine.type_name != nil or
+      routine.type_schema != nil
   end
 end

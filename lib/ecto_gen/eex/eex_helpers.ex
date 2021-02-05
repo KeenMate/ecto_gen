@@ -75,7 +75,8 @@ defmodule EctoGen.EEx.Helpers do
           ]
       end)
 
-    [result, ") :: {:error, any()} | {:ok, ", get_function_return_spec(routine, module_name), "}"]
+    # "{:error, any()} | {:ok, ", get_function_return_type_spec(routine, module_name), "}"
+    [result, ") :: ", get_function_return_spec(routine, module_name)]
   end
 
   def sort_function_params_by_postion(routine_params) do
@@ -83,8 +84,8 @@ defmodule EctoGen.EEx.Helpers do
     |> Enum.sort_by(& &1.position, :asc)
   end
 
-  @spec get_function_return_spec(DbRoutine.t(), binary() | iodata()) :: iodata()
-  def get_function_return_spec(routine, module_name) do
+  @spec get_function_return_type_spec(DbRoutine.t(), binary() | iodata()) :: iodata()
+  def get_function_return_type_spec(routine, module_name) do
     [
       "[",
       case {
@@ -134,4 +135,16 @@ defmodule EctoGen.EEx.Helpers do
   end
 
   def simple_return_type_param_name(), do: "value"
+
+  def error_tuple_spec() do
+    "{:error, any()}"
+  end
+
+  defp get_function_return_spec(routine, module_name) do
+    if DbRoutine.has_return_type(routine) do
+      [error_tuple_spec(), " | {:ok, ", get_function_return_type_spec(routine, module_name), "}"]
+    else
+      [error_tuple_spec(), " | :ok"]
+    end
+  end
 end
