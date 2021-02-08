@@ -10,7 +10,7 @@ by adding `ecto_gen` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:ecto_gen, "~> 0.1.0"}
+    {:ecto_gen, "~> 0.7.1", runtime: false, only: :dev}
   ]
 end
 ```
