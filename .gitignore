@@ -29,4 +29,4 @@ ecto_gen-*.tar
 /tmp
 
 # Ignore generated content
-/eg_output
+/lib/eg_output
