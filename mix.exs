@@ -4,13 +4,14 @@ defmodule EctoGen.MixProject do
   def project do
     [
       app: :ecto_gen,
-      version: "0.8.0",
+      version: "0.8.2",
       elixir: "~> 1.11",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       package: package(),
       description: description(),
-      source_url: "https://github.com/KeenMate/ecto_gen"
+      source_url: "https://github.com/KeenMate/ecto_gen",
+      docs: docs()
     ]
   end
 
@@ -44,5 +45,12 @@ defmodule EctoGen.MixProject do
     """
     This tool offers generating elixir functions that call PostgreSQL stored procedures and parses the result into elixir structs.
     """
+  end
+
+  defp docs() do
+    [
+      main: "readme",
+      extras: ["README.md", "LICENSE.md"]
+    ]
   end
 end

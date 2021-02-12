@@ -1,10 +1,15 @@
 # EctoGen
 
-**TODO: Add description**
+This tool is for `Postgres` database. It is designed for database-first approach. When executed, it generates `DbContext` module with configured module prefix with elixir functions that call db stored procedures.
+The generated code even contains parsing mechanism that generates `struct`s for each "complex" type returned from db functions. It even supports procedures (with no return type), functions returning simple types (int, text etc.).
+Generated code has no runtime overhead - the code purely uses `Ecto` repo.
+
+The tool uses EEx so it is also quite customizable.
+You are able to select just the functions you need from given schemas or you can include all and exclude just some.
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
+The package can be installed
 by adding `ecto_gen` to your list of dependencies in `mix.exs`:
 
 ```elixir
@@ -37,10 +42,10 @@ config :ecto_gen,
   # This way, you can provide custom template for individual parts of generation
   # default files are in /priv/templates directory of this package
   template_overrides: [
-    # db_module: "/path/to/db_module.ex.eex",
-    # routine: "/path/to/db_routine.ex.eex",
-    # routine_result: "/path/to/db_routine_result.ex.eex",
-    # routine_parser: "/path/to/db_routine_parser.ex.eex"
+    db_module: "/path/to/db_module.ex.eex",
+    routine: "/path/to/db_routine.ex.eex",
+    routine_result: "/path/to/db_routine_result.ex.eex",
+    routine_parser: "/path/to/db_routine_parser.ex.eex"
   ],
 
   # This config holds information about what routines (funcs) from database will have generated elixir functions etc.
