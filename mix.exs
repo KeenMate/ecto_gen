@@ -43,7 +43,7 @@ defmodule EctoGen.MixProject do
 
   defp description() do
     """
-    This tool offers generating elixir functions that call PostgreSQL stored procedures and parses the result into elixir structs.
+    This tool generates elixir functions that call PostgreSQL stored functions/procedures and parse the result into elixir structs.
     """
   end
 
