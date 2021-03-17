@@ -109,7 +109,7 @@ defmodule Mix.Tasks.Eg.Gen do
 
       filename = Path.join([output_location, "parsers", [routine_parser_filename, ".ex"]])
 
-      MixIO.info(" * Creating: #{filename}")
+      MixIO.info(" * creating: #{filename}")
 
       File.write!(
         filename,
@@ -132,7 +132,7 @@ defmodule Mix.Tasks.Eg.Gen do
 
       filename = Path.join([output_location, "models", [routine_result_struct_filename, ".ex"]])
 
-      MixIO.info(" * Creating: #{filename}")
+      MixIO.info(" * creating: #{filename}")
 
       File.write!(
         filename,
