@@ -13,12 +13,7 @@ config :ecto_gen,
   # ],
   db_project: [
     public: [
-      funcs: [
-        "get_all_menu",
-        "toggle_menu_visibility",
-        "toggle_menu_new_state",
-        "this_is_procedure"
-      ]
+      funcs: "*"
     ]
   ]
 
