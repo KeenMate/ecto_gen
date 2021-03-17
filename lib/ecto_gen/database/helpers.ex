@@ -75,7 +75,7 @@ defmodule EctoGen.Database.Helpers do
 
   defp process_loaded_routines({:ok, routines}, schema_config) do
     funcs = Keyword.get(schema_config, :funcs)
-    ignored_funcs = Keyword.get(schema_config, :ignored_funcs)
+    ignored_funcs = Keyword.get(schema_config, :ignored_funcs, [])
 
     case {funcs, ignored_funcs} do
       {f, ignored} when f in ["*", nil] and is_list(ignored) ->
