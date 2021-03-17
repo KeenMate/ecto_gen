@@ -19,7 +19,6 @@ config :ecto_gen,
         "toggle_menu_new_state",
         "this_is_procedure"
       ]
-      # ignored_funcs: ["create_menu"]
     ]
   ]
 

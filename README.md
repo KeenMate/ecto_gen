@@ -55,7 +55,7 @@ config :ecto_gen,
       funcs: "*", # or ["func_name_1", "func_name_2"]
 
       # makes sense to specify ignored functions (routines) only when funcs equal "*"
-      ignored_funcs: ["create_menu"]
+      ignored_funcs: ["ignored_func_name_1"]
     ]
   ]
 ```
