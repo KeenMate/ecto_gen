@@ -67,17 +67,10 @@ With this added to your configuration, you can generate the db context issuing f
 
 ### Using generated DbContext
 
-Before you start using the generated code you need to start `Postgrex` process (all generated functions to use required as a 1st argument the PID of this `Postgrex` process)
-
+Using generated functions is straightforward. Simply call the function to get results:
+The Ecto repo must be started.
 ```elixir
-
-{:ok, pg_pid} = Postgrex.start_link(db_config)
-
-alias MyApp.EctoGenOutput, as: EG
-
-EG.DbContext.func_name_1(pg_pid, arg1, arg2)
-
-
+MyApp.EctoGenOutput.DbContext.func_name_1(arg1, arg2)
 ```
 
 Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
