@@ -53,21 +53,29 @@ defmodule Mix.Tasks.Eg.Gen do
 
     prepare_directory_structure(output_location)
 
-    create_context_module(
-      routines_with_params,
-      output_location,
-      sanitized_module_name,
-      repo_module
-    )
-
-    create_routine_parser_modules(
-      routines_with_params,
-      output_location,
-      sanitized_module_name,
-      include_sensitive_data
-    )
-
-    create_routines_results_modules(routines_with_params, output_location, sanitized_module_name)
+    [
+      fn ->
+        create_context_module(
+          routines_with_params,
+          output_location,
+          sanitized_module_name,
+          repo_module
+        )
+      end,
+      fn ->
+        create_routine_parser_modules(
+          routines_with_params,
+          output_location,
+          sanitized_module_name,
+          include_sensitive_data
+        )
+      end,
+      fn ->
+        create_routines_results_modules(routines_with_params, output_location, sanitized_module_name)
+      end
+    ]
+    |> Enum.map(&Task.async/1)
+    |> Enum.map(&Task.await/1)
 
     :ok
   end
