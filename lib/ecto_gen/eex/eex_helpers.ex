@@ -75,7 +75,6 @@ defmodule EctoGen.EEx.Helpers do
           ]
       end)
 
-    # "{:error, any()} | {:ok, ", get_function_return_type_spec(routine, module_name), "}"
     [result, ") :: ", get_function_return_spec(routine, module_name)]
   end
 

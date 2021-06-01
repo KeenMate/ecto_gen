@@ -14,8 +14,6 @@ defmodule EctoGen.Database.DbRoutineParameter do
 
   defstruct @fields
 
-  require Logger
-
   alias EctoGen.Database.DbRoutineParameter, as: RoutineParameter
 
   @type t() :: %RoutineParameter{}
