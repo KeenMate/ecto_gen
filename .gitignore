@@ -30,3 +30,5 @@ ecto_gen-*.tar
 
 # Ignore generated content
 /lib/eg_output
+.idea
+config/db_config.secret.ex
