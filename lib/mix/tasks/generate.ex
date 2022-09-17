@@ -15,7 +15,7 @@ defmodule Mix.Tasks.Eg.Gen do
     -y      Confirms all questions during task execution
   """
 
-  alias EctoGen.{Database, EEx.EExGenerator}
+  alias EctoGen.Database
   alias EctoGen.Path, as: EGPath
   alias EctoGen.EEx, as: EGEEx
   alias Mix.Shell.IO, as: MixIO
@@ -33,7 +33,7 @@ defmodule Mix.Tasks.Eg.Gen do
     MixIO.info("Task finished")
   end
 
-  defp do_magic(config, pg_pid, opts \\ []) do
+  defp do_magic(config, pg_pid, opts) do
     %{db_project: db_project_config} = config
 
     MixIO.info("Getting routines from database")
@@ -52,7 +52,7 @@ defmodule Mix.Tasks.Eg.Gen do
       db_config: repo_module
     } = config
 
-    EGPath.prepare_directory_structure(output_location, opts)
+    prepare_directory_structure(output_location, opts)
 
     [
       fn ->
@@ -104,7 +104,7 @@ defmodule Mix.Tasks.Eg.Gen do
        ) do
     MixIO.info("Generating routines parser modules")
 
-    EGEEx.create_context_module(
+    EGEEx.create_routine_parser_modules(
       routines_with_params,
       output_location,
       module_name,
@@ -122,6 +122,17 @@ defmodule Mix.Tasks.Eg.Gen do
       module_name,
       &MixIO.info(" * creating: #{&1}")
     )
+  end
+
+  defp prepare_directory_structure(output_location, opts) do
+    MixIO.info("Preparing directory structure")
+
+    if not opts[:auto_confirm] and not MixIO.yes?(
+         "Ensuring that output location: \"#{output_location}\" is clean by deleting it. \nProceed?"
+       ) do
+        Mix.raise("Operation aborted")
+    end
+    EGPath.prepare_directory_structure(output_location)
   end
 
   def parse_args(args) do
