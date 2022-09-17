@@ -1,7 +1,8 @@
 defmodule EctoGen.EEx do
 
+  alias EctoGen.{Database, EEx.EExGenerator}
 
-  defp create_context_module(routines_with_params, output_location, module_name, repo_module) do
+  def create_context_module(routines_with_params, output_location, module_name, repo_module) do
     context_module =
       routines_with_params
       |> EExGenerator.generate_context_module(
@@ -12,7 +13,7 @@ defmodule EctoGen.EEx do
     File.write(Path.join(output_location, "db_context.ex"), context_module)
   end
 
-  defp create_routine_parser_modules(
+  def create_routine_parser_modules(
          routines_with_params,
          output_location,
          module_name,
@@ -45,7 +46,7 @@ defmodule EctoGen.EEx do
     end)
   end
 
-  defp create_routines_results_modules(
+  def create_routines_results_modules(
     routines_with_params,
     output_location,
     module_name,

@@ -1,13 +1,5 @@
 defmodule EctoGen.Path do
-  def prepare_directory_structure(output_location, opts) do
-    MixIO.info("Preparing directory structure")
-
-    if not opts[:auto_confirm] and not MixIO.yes?(
-         "Ensuring that output location: \"#{output_location}\" is clean by deleting it. \nProceed?"
-       ) do
-        Mix.raise("Operation aborted")
-    end
-
+  def prepare_directory_structure(output_location) do
     File.rm_rf(output_location)
 
     [
