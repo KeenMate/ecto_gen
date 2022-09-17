@@ -12,7 +12,7 @@ defmodule EctoGen.Configuration do
       db_config: db_config_key,
       db_project: get_db_project(),
       output_location: Application.get_env(:ecto_gen, :output_location),
-      output_module: Application.get_env(:ecto_gen, :output_module),
+      output_module: sanitize_module_name(Application.get_env(:ecto_gen, :output_module)),
       include_sensitive_data: Application.get_env(:ecto_gen, :include_sensitive_data)
     }
   end
@@ -61,4 +61,10 @@ defmodule EctoGen.Configuration do
       }
     end)
   end
+
+  defp sanitize_module_name(module_name) when is_atom(module_name) do
+    Atom.to_string(module_name)
+  end
+
+  defp sanitize_module_name(module_name) when is_binary(module_name), do: module_name
 end

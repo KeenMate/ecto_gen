@@ -41,6 +41,9 @@ config :ecto_gen,
 
   # This way, you can provide custom template for individual parts of generation
   # default files are in /priv/templates directory of this package
+  # NOTE:
+  # If you add these overrides in the middle of project, you will need to recompile this package using the following to generate new EEx template functions:
+  # mix deps.compile ecto_gen
   template_overrides: [
     db_module: "/path/to/db_module.ex.eex",
     routine: "/path/to/db_routine.ex.eex",
