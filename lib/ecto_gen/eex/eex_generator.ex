@@ -13,41 +13,41 @@ defmodule EctoGen.EEx.EExGenerator do
 
   @eex_templates_path Path.join(:code.priv_dir(:ecto_gen), "eex_templates")
 
-  EEx.function_from_file(
-    :defp,
-    :routine_result_item_eex,
-    Keyword.get(@file_templates_overrides, :routine_result) ||
-      Path.join(@eex_templates_path, "routine_result_item.ex.eex"),
-    [:assigns]
-  )
+  def routine_result_item_eex(assigns) do
+    path =
+      Keyword.get(@file_templates_overrides, :routine_result) ||
+        Path.join(@eex_templates_path, "routine_result_item.ex.eex")
 
-  EEx.function_from_file(
-    :defp,
-    :routine_eex,
-    Keyword.get(@file_templates_overrides, :routine) ||
-      Path.join(@eex_templates_path, "routine.ex.eex"),
-    [
-      :assigns
-    ]
-  )
+    eval_template(path, assigns)
+  end
 
-  EEx.function_from_file(
-    :defp,
-    :routine_parser_eex,
-    Keyword.get(@file_templates_overrides, :routine_parser) ||
-      Path.join(@eex_templates_path, "routine_parser.ex.eex"),
-    [
-      :assigns
-    ]
-  )
+  def routine_eex(assigns) do
+    path =
+      Keyword.get(@file_templates_overrides, :routine) ||
+        Path.join(@eex_templates_path, "routine.ex.eex")
 
-  EEx.function_from_file(
-    :defp,
-    :db_context_module_eex,
-    Keyword.get(@file_templates_overrides, :db_module) ||
-      Path.join(@eex_templates_path, "db_module.ex.eex"),
-    [:assigns]
-  )
+    eval_template(path, assigns)
+  end
+
+  def routine_parser_eex(assigns) do
+    path =
+      Keyword.get(@file_templates_overrides, :routine_parser) ||
+        Path.join(@eex_templates_path, "routine_parser.ex.eex")
+
+    eval_template(path, assigns)
+  end
+
+  def db_context_module_eex(assigns) do
+    path =
+      Keyword.get(@file_templates_overrides, :db_module) ||
+        Path.join(@eex_templates_path, "db_module.ex.eex")
+
+    eval_template(path, assigns)
+  end
+
+  defp eval_template(path, assigns) do
+    EEx.eval_file(path, [assigns: assigns])
+  end
 
   @spec generate_context_module([routine_with_params()], keyword()) ::
           iodata()
