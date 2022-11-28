@@ -9,7 +9,7 @@ defmodule EctoGen.EEx.EExGenerator do
 
   @type routine_with_params :: {Database.DbRoutine.t(), [Database.DbRoutineParameter.t()]}
 
-  @file_templates_overrides Application.get_env(:ecto_gen, :template_overrides, [])
+  @file_templates_overrides Application.compile_env(:ecto_gen, :template_overrides, [])
 
   @eex_templates_path Path.join(:code.priv_dir(:ecto_gen), "eex_templates")
 
