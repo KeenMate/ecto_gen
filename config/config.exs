@@ -18,4 +18,4 @@ config :ecto_gen,
     ]
   ]
 
-import_config "db_config.secret.exs"
+File.regular?("config/db_config.secret.exs") && import_config("db_config.secret.exs")
