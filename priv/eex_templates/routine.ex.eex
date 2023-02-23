@@ -1,10 +1,11 @@
 <%= @function_spec %>
-def <%= @function_name %>(<%= @input_params_with_default %>) do
+def <%= @function_name %>(<%= @input_params_with_default %>, query_opts \\ []) do
 	Logger.debug("Calling stored procedure", procedure: "<%= @routine.name %>")
 
 	query(
 		"<%= if @routine_has_return_type do %>select * from<% else %>call<% end %> <%= @routine.schema %>.<%= @routine.name %>(<%= @sql_params %>)",
-		[<%= @input_params %>]
+		[<%= @input_params %>],
+		query_opts
 	)
 	<%= if @routine_has_return_type do %>
 	|> <%= @parse_function_name %>()
