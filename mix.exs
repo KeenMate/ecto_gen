@@ -4,7 +4,7 @@ defmodule EctoGen.MixProject do
   def project do
     [
       app: :ecto_gen,
-      version: "0.9.4",
+      version: "0.9.5",
       elixir: "~> 1.11",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
