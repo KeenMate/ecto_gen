@@ -9,7 +9,7 @@ defmodule <%= @module_name %>.DbContext do
 
 	require Logger
 
-	import <%= @repo_module %>, only: [query: 3, query: 2]
+	import <%= @repo_module %>, only: [query: 3]
 
 	<%= for routine_assigns <- @routines do %>
 	<%= routine_eex(routine_assigns)	%>
