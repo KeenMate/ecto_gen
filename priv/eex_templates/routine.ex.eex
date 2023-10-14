@@ -1,5 +1,5 @@
 <%= @function_spec %>
-def <%= @function_name %>(<%= @routine_function_params %>) do
+def <%= @function_name %>(<%= @routine_function_params %><%= if @routine_function_params == [], do: "", else: ", " %>query_opts \\ []) do
 	Logger.debug("Calling stored procedure", procedure: "<%= @routine.name %>")
 
 	query(

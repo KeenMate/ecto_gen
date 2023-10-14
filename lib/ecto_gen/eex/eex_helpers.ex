@@ -9,37 +9,26 @@ defmodule EctoGen.EEx.Helpers do
 
   @spec generate_params_list([DbRoutineParameter.t()], boolean()) :: iodata()
   def generate_params_list(routine_params, with_default \\ false) do
-    params_str =
-      routine_params
-      |> sort_function_params_by_postion()
-      |> Enum.reduce(
-        [],
-        fn %{name: param_name, parameter_default: default_value}, acc ->
-          [
-            if acc == [] do
-              acc
-            else
-              [acc, ", "]
-            end,
-            param_name,
-            if with_default and default_value do
-              [" \\\\ ", value_not_provided_token()]
-            else
-              []
-            end
-          ]
-        end
-      )
-
-    [
-      params_str,
-      if params_str == [] do
-        []
-      else
-        [", "]
-      end,
-      "query_opts \\\\ []"
-    ]
+    routine_params
+    |> sort_function_params_by_postion()
+    |> Enum.reduce(
+      [],
+      fn %{name: param_name, parameter_default: default_value}, acc ->
+        [
+          if acc == [] do
+            acc
+          else
+            [acc, ", "]
+          end,
+          param_name,
+          if with_default and default_value do
+            [" \\\\ ", value_not_provided_token()]
+          else
+            []
+          end
+        ]
+      end
+    )
   end
 
   @spec generate_sql_query_params_assignments([DbRoutineParameter.t()]) :: iodata()
