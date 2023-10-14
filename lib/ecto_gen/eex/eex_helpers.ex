@@ -7,8 +7,8 @@ defmodule EctoGen.EEx.Helpers do
 
   require DbRoutine
 
-  @spec generate_function_params([DbRoutineParameter.t()], boolean()) :: iodata()
-  def generate_function_params(routine_params, is_function_header \\ false) do
+  @spec generate_params_list([DbRoutineParameter.t()], boolean()) :: iodata()
+  def generate_params_list(routine_params, with_default \\ false) do
     params_str =
       routine_params
       |> sort_function_params_by_postion()
@@ -22,8 +22,8 @@ defmodule EctoGen.EEx.Helpers do
               [acc, ", "]
             end,
             param_name,
-            if is_function_header and default_value do
-              " \\\\ nil"
+            if with_default and default_value do
+              [" \\\\ ", value_not_provided_token()]
             else
               []
             end
@@ -31,37 +31,68 @@ defmodule EctoGen.EEx.Helpers do
         end
       )
 
-    if is_function_header do
-      [
-        params_str,
-        if params_str == [] do
-          []
-        else
-          [", "]
-        end,
-        "query_opts \\\\ []"
-      ]
-    else
-      params_str
-    end
+    [
+      params_str,
+      if params_str == [] do
+        []
+      else
+        [", "]
+      end,
+      "query_opts \\\\ []"
+    ]
+  end
+
+  @spec generate_sql_query_params_assignments([DbRoutineParameter.t()]) :: iodata()
+  def generate_sql_query_params_assignments(routine_params) do
+    params_list =
+      Enum.reduce(
+        routine_params,
+        [],
+        fn %{name: param_name}, acc ->
+          [
+            if acc == [] do
+              acc
+            else
+              [acc, ", "]
+            end,
+            param_name
+          ]
+        end)
+
+    [
+      "[",
+      params_list,
+      "]",
+      "|> Enum.filter(fn x -> x != ",
+      value_not_provided_token(),
+      " end)"
+    ]
   end
 
   @spec generate_sql_params(list()) :: iodata()
-  def generate_sql_params(l) do
-    l
+  def generate_sql_params(routine_params) do
+    routine_params
     |> Enum.with_index()
     |> Enum.reduce(
       [],
-      &[
-        if &2 == [] do
+      fn {%DbRoutineParameter{original_name: original_name, name: name}, idx}, acc ->
+        [
+        if acc == [] do
           []
         else
-          [&2, ", "]
+          [acc, ", "]
         end,
-        "$",
-        Integer.to_string(elem(&1, 1) + 1)
+        "\#{if ",
+        name,
+        " == ",
+        value_not_provided_token(),
+        ", do: \"\", else: \"",
+        original_name,
+        " := $",
+        Integer.to_string(idx + 1),
+        "\"}"
       ]
-    )
+    end)
   end
 
   @spec generate_function_spec(
@@ -86,7 +117,7 @@ defmodule EctoGen.EEx.Helpers do
             acc,
             if(index != 0, do: ", ", else: []),
             DbRoutineParameter.udt_name_to_elixir_term(udt_name),
-            if(has_default, do: " | nil", else: [])
+            if(has_default, do: [" | ", value_not_provided_token()], else: [])
           ]
       end)
 
@@ -152,6 +183,11 @@ defmodule EctoGen.EEx.Helpers do
 
   def error_tuple_spec() do
     "{:error, any()}"
+  end
+
+  @spec value_not_provided_token() :: binary()
+  def value_not_provided_token() do
+    ":eg_value_not_provided"
   end
 
   defp get_function_return_spec(routine, module_name) do

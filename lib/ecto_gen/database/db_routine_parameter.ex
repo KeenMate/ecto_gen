@@ -4,6 +4,7 @@ defmodule EctoGen.Database.DbRoutineParameter do
   @fields [
     :position,
     :name,
+    :original_name,
     # type name
     :udt_name,
     :mode,
@@ -25,6 +26,7 @@ defmodule EctoGen.Database.DbRoutineParameter do
         %RoutineParameter{
           position: position,
           name: name,
+          original_name: name,
           mode: mode_validated,
           udt_name: udt_name,
           parameter_default: parameter_default

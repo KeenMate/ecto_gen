@@ -207,8 +207,8 @@ defmodule EctoGen.EEx.EExGenerator do
       function_name: unique_function_name,
       function_spec: generate_function_spec(unique_routine, input_routine_params, module_name),
       sql_params: generate_sql_params(input_routine_params),
-      input_params: generate_function_params(input_routine_params),
-      input_params_with_default: generate_function_params(input_routine_params, true),
+      sql_query_params: generate_sql_query_params_assignments(input_routine_params),
+      routine_function_params: generate_params_list(input_routine_params, true),
       routine_has_return_type: has_return_type,
       parse_function_name:
         if has_return_type do
@@ -263,7 +263,7 @@ defmodule EctoGen.EEx.EExGenerator do
       parse_function_name: get_routine_parse_function_name(unique_function_name),
       output_params:
         if routine_has_complex_data do
-          generate_function_params(output_routine_params)
+          generate_params_list(output_routine_params)
         else
           simple_return_type_param_name()
         end,
