@@ -1,3 +1,5 @@
+> This tool is now deprecated. We decided to create a new tool called [db-gen](https://github.com/keenmate/db-gen), which can generate code for any language, is more configurable and is very long-lasting, not dependent on any other framework or tool.
+
 # EctoGen
 
 This tool is for `Postgres` database. It is designed for database-first approach. When executed, it generates `DbContext` module with configured module prefix with elixir functions that call db stored procedures.
