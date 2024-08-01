@@ -56,7 +56,7 @@ defmodule <%= @module_name %> do
 	end
 
 	def <%= @parse_function_name_result_row %>(<%= unless @include_sensitive_data, do: "_" %>unknown_row) do
-		Logger.warn("Found result row that does not have valid number of columns"
+		Logger.warning("Found result row that does not have valid number of columns"
 			<%= if @include_sensitive_data do %>
 				, unknown_row: unknown_row
 			<% end %>
