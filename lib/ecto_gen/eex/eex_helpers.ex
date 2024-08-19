@@ -66,21 +66,17 @@ defmodule EctoGen.EEx.Helpers do
       [],
       fn {%DbRoutineParameter{original_name: original_name, name: name}, idx}, acc ->
         [
-        if acc == [] do
-          []
-        else
-          [acc, ", "]
-        end,
-        "\#{if ",
-        name,
-        " == ",
-        value_not_provided_token(),
-        ", do: \"\", else: \"",
-        original_name,
-        " := $",
-        Integer.to_string(idx + 1),
-        "\"}"
-      ]
+          acc,
+          "\#{if ",
+          name,
+          " == ",
+          value_not_provided_token(),
+          ", do: \"\", else: \", ",
+          original_name,
+          " := $",
+          Integer.to_string(idx + 1),
+          "\"}"
+        ]
     end)
   end
 
