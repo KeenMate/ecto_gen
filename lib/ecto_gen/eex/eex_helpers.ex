@@ -71,7 +71,12 @@ defmodule EctoGen.EEx.Helpers do
           name,
           " == ",
           value_not_provided_token(),
-          ", do: \"\", else: \", ",
+          ", do: \"\", else: \"",
+          if acc == [] do
+            ""
+          else
+            ", "
+          end,
           original_name,
           " := $",
           Integer.to_string(idx + 1),
