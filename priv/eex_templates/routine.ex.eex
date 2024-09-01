@@ -1,9 +1,13 @@
 <%= @function_spec %>
 def <%= @function_name %>(<%= @routine_function_params %><%= if @routine_function_params == [], do: "", else: ", " %>query_opts \\ []) do
-	Logger.debug("Calling database function", function_name: "<%= @routine.name %>")
+	Logger.debug("Calling database routine", routine_name: "<%= @routine.name %>")
+
+	sql_params_str =
+		<%= @sql_params %>
+		|> IO.iodata_to_binary()
 
 	query(
-		"<%= if @routine_has_return_type do %>select * from<% else %>call<% end %> <%= @routine.schema %>.<%= @routine.name %>(<%= @sql_params %>)",
+		"<%= if @routine_has_return_type do %>select * from<% else %>call<% end %> <%= @routine.schema %>.<%= @routine.name %>(#{sql_params_str})",
 		<%= @sql_query_params %>,
 		query_opts
 	)

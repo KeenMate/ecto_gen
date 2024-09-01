@@ -61,7 +61,7 @@ defmodule EctoGen.EEx.Helpers do
   @spec generate_sql_params(list()) :: iodata()
   def generate_sql_params(routine_params) do
     [
-      "#\{[",
+      "[",
       routine_params
       |> Enum.with_index()
       |> Enum.map(fn {%DbRoutineParameter{original_name: original_name, name: name}, idx} ->
@@ -71,20 +71,15 @@ defmodule EctoGen.EEx.Helpers do
           else
             ", "
           end,
-          "{\"#{original_name}\", \"#{name}\"}"
+          "{\"#{original_name}\", #{name}}"
         ]
       end),
       """
       ]
       |> Enum.filter(fn {_name, value} -> value != #{value_not_provided_token()} end)
       |> Enum.with_index()
-      |> Enum.map(fn {{original_name, value}, idx} ->
+      |> Enum.map(fn {{original_name, _value}, idx} ->
         [
-          "#\\{if ",
-          value,
-          " == ",
-          #{value_not_provided_token()},
-          ", do: \\"\\", else: \\"",
           if idx == 0 do
             ""
           else
@@ -92,11 +87,9 @@ defmodule EctoGen.EEx.Helpers do
           end,
           original_name,
           " := $",
-          Integer.to_string(idx + 1),
-          "\\"}"
+          Integer.to_string(idx + 1)
         ]
       end)
-      }
       """
     ]
   end
