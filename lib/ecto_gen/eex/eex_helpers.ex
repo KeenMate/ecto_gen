@@ -10,7 +10,7 @@ defmodule EctoGen.EEx.Helpers do
   @spec generate_params_list([DbRoutineParameter.t()], boolean()) :: iodata()
   def generate_params_list(routine_params, with_default \\ false) do
     routine_params
-    |> sort_function_params_by_postion()
+    |> sort_function_params_by_position()
     |> Enum.reduce(
       [],
       fn %{name: param_name, parameter_default: default_value}, acc ->
@@ -60,19 +60,32 @@ defmodule EctoGen.EEx.Helpers do
 
   @spec generate_sql_params(list()) :: iodata()
   def generate_sql_params(routine_params) do
-    routine_params
-    |> Enum.with_index()
-    |> Enum.reduce(
-      [],
-      fn {%DbRoutineParameter{original_name: original_name, name: name}, idx}, acc ->
+    [
+      "#\{[",
+      routine_params
+      |> Enum.with_index()
+      |> Enum.map(fn {%DbRoutineParameter{original_name: original_name, name: name}, idx} ->
         [
-          acc,
-          "\#{if ",
-          name,
+          if idx == 0 do
+            []
+          else
+            ", "
+          end,
+          "{\"#{original_name}\", \"#{name}\"}"
+        ]
+      end),
+      """
+      ]
+      |> Enum.filter(fn {_name, value} -> value != #{value_not_provided_token()} end)
+      |> Enum.with_index()
+      |> Enum.map(fn {{original_name, value}, idx} ->
+        [
+          "#\\{if ",
+          value,
           " == ",
-          value_not_provided_token(),
-          ", do: \"\", else: \"",
-          if acc == [] do
+          #{value_not_provided_token()},
+          ", do: \\"\\", else: \\"",
+          if idx == 0 do
             ""
           else
             ", "
@@ -80,9 +93,12 @@ defmodule EctoGen.EEx.Helpers do
           original_name,
           " := $",
           Integer.to_string(idx + 1),
-          "\"}"
+          "\\"}"
         ]
-    end)
+      end)
+      }
+      """
+    ]
   end
 
   @spec generate_function_spec(
@@ -95,7 +111,7 @@ defmodule EctoGen.EEx.Helpers do
 
     result =
       input_params
-      |> sort_function_params_by_postion()
+      |> sort_function_params_by_position()
       |> Enum.with_index()
       |> Enum.reduce(result, fn
         {
@@ -114,7 +130,7 @@ defmodule EctoGen.EEx.Helpers do
     [result, ") :: ", get_function_return_spec(routine, module_name)]
   end
 
-  def sort_function_params_by_postion(routine_params) do
+  def sort_function_params_by_position(routine_params) do
     routine_params
     |> Enum.sort_by(& &1.position, :asc)
   end

@@ -1,6 +1,6 @@
 <%= @function_spec %>
 def <%= @function_name %>(<%= @routine_function_params %><%= if @routine_function_params == [], do: "", else: ", " %>query_opts \\ []) do
-	Logger.debug("Calling stored procedure", procedure: "<%= @routine.name %>")
+	Logger.debug("Calling database function", function_name: "<%= @routine.name %>")
 
 	query(
 		"<%= if @routine_has_return_type do %>select * from<% else %>call<% end %> <%= @routine.schema %>.<%= @routine.name %>(<%= @sql_params %>)",

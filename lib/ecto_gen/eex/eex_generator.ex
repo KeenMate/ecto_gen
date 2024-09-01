@@ -88,12 +88,9 @@ defmodule EctoGen.EEx.EExGenerator do
   @spec generate_context_module([routine_with_params()], keyword()) ::
           iodata()
   def generate_context_module(routines_with_params, opts \\ []) do
-    result =
-      routines_with_params
-      |> prepare_context_module_assigns(opts)
-      |> db_context_module_eex()
-
-    result
+    routines_with_params
+    |> prepare_context_module_assigns(opts)
+    |> db_context_module_eex()
     |> Code.format_string!()
   end
 
